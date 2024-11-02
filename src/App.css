@@ -36,3 +36,371 @@
     transform: rotate(360deg);
   }
 }
+
+/* 为导航栏设置 hover 样式 */
+.navbar-nav .nav-link {
+  color: #ffffff;
+  /* 默认文本颜色 */
+  transition: background-color 0.3s ease, color 0.3s ease;
+  /* 添加平滑过渡效果 */
+}
+
+.navbar-nav .nav-link:hover {
+  background-color: #007bff;
+  /* Hover 时背景变为蓝色 */
+  color: #ffffff;
+  /* 文字颜色在 hover 时保持白色 */
+}
+
+.navbar-nav .nav-dropdown-item {
+  color: #000;
+  /* 默认下拉项的文本颜色 */
+  transition: background-color 0.3s ease, color 0.3s ease;
+  /* 添加过渡效果 */
+}
+
+.navbar-nav .nav-dropdown-item:hover {
+  background-color: #f0f0f0;
+  /* 下拉项在 hover 时背景变为灰色 */
+  color: #007bff;
+  /* 在 hover 时文字颜色变为蓝色 */
+  border-radius: 4px;
+  /* 给 hover 状态下的项加个边角圆滑的效果 */
+}
+
+.navbar-dark .navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.5);
+  /* 为 navbar toggler 设置 hover 边框颜色 */
+}
+
+/* 使下拉项之间的间距更清晰 */
+.navbar-nav .nav-item+.nav-item {
+  margin-left: 15px;
+}
+
+/* 为 NavDropdown.Item 增加 hover 样式 */
+.nav-dropdown-item {
+  color: #000;
+  /* 默认文本颜色 */
+  transition: background-color 0.3s ease, color 0.3s ease;
+  /* 添加平滑的过渡效果 */
+}
+
+.nav-dropdown-item:hover {
+  background-color: #007bff;
+  /* 悬停时背景变为蓝色 */
+  color: #ffffff;
+  /* 悬停时文字颜色变为白色 */
+}
+
+.centered-table {
+  margin: 0 auto;
+}
+
+.centered-table-container {
+  width: 800px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.table-container {
+  margin-top: 20px;
+}
+
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.add-button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 8px 16px;
+  font-size: 16px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.green-button {
+  background-color: #28a745;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  margin-right: 10px;
+}
+
+.gray-button {
+  background-color: #6c757d;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  margin-right: 10px;
+}
+
+.red-button {
+  background-color: red;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  margin-right: 10px;
+}
+
+.blue-button {
+  background-color: #007bff;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  margin-right: 10px;
+}
+
+
+.nav-link {
+  margin-right: 15px;
+  text-decoration: none;
+  /* 移除链接下划线 */
+  color: #ffffff;
+  /* 链接文字颜色为白色 */
+  font-weight: bold;
+  /* 字体加粗 */
+  transition: color 0.3s ease;
+  /* 过渡效果：颜色 */
+}
+
+.nav-link:hover {
+  color: #ffa500;
+  /* 悬停时的文字颜色变化 */
+}
+
+.nav-link:last-child {
+  margin-right: 0;
+  /* 最后一个链接不需要右边距 */
+}
+
+.no-bullets {
+  list-style-type: none;
+  padding: 0;
+}
+
+.no-bullets li {
+  margin-bottom: 5px;
+  /* 增加底部边距 */
+  padding: 5px 0;
+  /* 增加上下的 padding */
+}
+
+/* 适用于编辑器的内容区域 */
+.toastui-editor-contents {
+  text-align: left !important;
+  /* 设置内容区域的文本为左对齐 */
+  font-family: 'Arial', sans-serif  !important;
+  /* 字体 */
+  font-size: 16px  !important;
+  /* 字体大小 */
+  color: #333333  !important;
+  /* 字体颜色 */
+  line-height: 1.8 !important;
+  /* 行高 */
+}
+
+/* 强制编辑器内容左对齐 */
+.toastui-editor-contents,
+.ProseMirror {
+  text-align: left !important;
+  /* 确保内容居左对齐 */
+}
+
+/* 避免编辑器默认的居中行为 */
+.toastui-editor {
+  display: block;
+  justify-content: flex-start !important;
+  /* 强制内容区域靠左 */
+}
+
+.centered-table {
+  border-collapse: collapse;
+  /* 去掉双重边框 */
+  width: 100%;
+  max-width: 800px;
+  margin: 20px auto;
+}
+
+.centered-table th,
+.centered-table td {
+  border: 1px solid #ddd;
+  /* 添加单线边框 */
+  padding: 10px;
+  text-align: center;
+}
+
+.centered-table th {
+  background-color: #f2f2f2;
+  /* 表头背景颜色 */
+  color: #333;
+}
+
+.centered-table td input {
+  width: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+  /* 使 padding 不影响 input 的大小 */
+}
+
+.matrix-instructions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.matrix-instructions-content {
+  text-align: center;
+  margin: 10px 0;
+  padding: 15px;
+  background-color: #f9f9f9;
+  /* 提示信息的背景颜色 */
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.result-container {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 15px;
+  width: 800px;
+  margin: 20px auto;
+}
+.go-to-list-button {
+  position: fixed; /* 固定位置 */
+  right: 130px;     /* 距离页面右边30像素 */
+  bottom: 50%;     /* 距离页面底部50%，即在页面中间 */
+  width: 50px;     /* 按钮宽度 */
+  height: 50px;    /* 按钮高度 */
+  background-color: #28a745; /* 按钮的绿色背景 */
+  color: white;    /* 箭头符号的颜色 */
+  border: none;    /* 去掉边框 */
+  border-radius: 50%; /* 圆形按钮 */
+  cursor: pointer; /* 鼠标悬停时的光标样式 */
+  font-size: 24px; /* 箭头符号的字体大小 */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* 添加一些阴影让按钮更具视觉效果 */
+  z-index: 1000;   /* 确保按钮位于页面内容之上 */
+  transition: background-color 0.3s ease; /* 鼠标悬停时的背景变色效果 */
+}
+
+.scroll-to-top-button {
+  position: fixed; /* 固定位置 */
+  right: 130px;     /* 距离页面右边30像素 */
+  bottom: 40%;     /* 距离页面底部50%，即在页面中间 */
+  width: 50px;     /* 按钮宽度 */
+  height: 50px;    /* 按钮高度 */
+  background-color: #28a745; /* 按钮的绿色背景 */
+  color: white;    /* 箭头符号的颜色 */
+  border: none;    /* 去掉边框 */
+  border-radius: 50%; /* 圆形按钮 */
+  cursor: pointer; /* 鼠标悬停时的光标样式 */
+  font-size: 24px; /* 箭头符号的字体大小 */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* 添加一些阴影让按钮更具视觉效果 */
+  z-index: 1000;   /* 确保按钮位于页面内容之上 */
+  transition: background-color 0.3s ease; /* 鼠标悬停时的背景变色效果 */
+}
+
+.scroll-to-top-button:hover {
+  background-color: #218838; /* 鼠标悬停时按钮变暗 */
+}
+
+
+.tab-button {
+  padding: 10px 20px;
+  margin: 0 10px;
+  cursor: pointer;
+  border: none;
+  background-color: #e0e0e0;
+  color: #333;
+  border-radius: 5px;
+}
+
+.tab-button.active {
+  background-color: #4caf50;
+  color: white;
+}
+
+/* 遮罩背景，确保覆盖整个页面且不透明 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7); /* 黑色半透明背景遮罩 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;  /* 使模态框位于最前 */
+}
+
+/* 模态框内容样式，确保完全不透明 */
+.modal-content {
+  background-color: #ffffff !important;  /* 纯白色背景，确保不透明 */
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;  /* 最大宽度，避免模态框过宽 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 添加阴影提升层次感 */
+  text-align: center;
+  color: #333; /* 确保字体颜色清晰 */
+}
+
+/* 输入框样式 */
+.modal-content input[type="text"] {
+  padding: 8px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* 按钮容器样式 */
+.modal-buttons {
+  display: flex;
+  justify-content: space-around;  /* 按钮在中心对齐 */
+  gap: 10px;
+}
+
+/* 按钮样式 */
+.confirm-button, .cancel-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.confirm-button {
+  background-color: red;
+  color: white;
+}
+
+.cancel-button {
+  background-color: gray;
+  color: white;
+}
+
+.error-message {
+  color: red;
+  margin-top: 15px;
+  font-weight: bold;
+}

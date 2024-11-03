@@ -157,7 +157,7 @@ const ArticleList = () => {
                         value={searchTerm}
                         onChange={handleSearchChange}
                         onKeyDown={handleKeyDown}  // 监听键盘事件
-                        style={{ width: '100%', padding: '10px', paddingRight: '40px' }}
+                        style={{ width: '90%', padding: '10px', paddingRight: '40px' }}
                     />
                     {searchTerm && (
                         <FaTimes

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { API_BASE_URL } from '../config';
+import api from './api.js'
 
 const ChecklistList = () => {
   const [checklists, setChecklists] = useState([]);
@@ -11,7 +11,7 @@ const ChecklistList = () => {
   const navigate = useNavigate();
 
   const fetchChecklists = async (page) => {
-    const response = await axios.get(`${API_BASE_URL}/platform_checklists`, {
+    const response = await api.get(`${API_BASE_URL}/platform_checklists`, {
       params: {
         page: page,
         page_size: pageSize
@@ -44,9 +44,9 @@ const ChecklistList = () => {
 
     try {
       const url = isParent
-        ? `${API_BASE_URL}/checklists/${checklistId}/delete-with-children`
-        : `${API_BASE_URL}/checklists/${checklistId}`;
-      await axios.delete(url);
+        ? `${API_BASE_URL}/platform_checklists/${checklistId}/delete-with-children`
+        : `${API_BASE_URL}/platform_checklists/${checklistId}`;
+      await api.delete(url);
 
       // 删除后刷新列表
       fetchChecklists(currentPage);

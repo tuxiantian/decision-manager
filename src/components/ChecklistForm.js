@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import mermaid from 'mermaid';
 import { API_BASE_URL } from '../config';
+import api from './api.js'
 import './ChecklistForm.css';
 
 // 初始化 Mermaid 配置
@@ -32,7 +32,7 @@ const ChecklistForm = () => {
   // 根据 checklistId 判断是否为更新模式，并在组件加载时获取数据
   useEffect(() => {
     if (checklistId) {
-      axios.get(`${API_BASE_URL}/platform_checklists/${checklistId}`)
+      api.get(`${API_BASE_URL}/platform_checklists/${checklistId}`)
         .then(response => {
           const data = response.data;
           setChecklistName(data.name);
@@ -133,11 +133,11 @@ const ChecklistForm = () => {
       }
       if (checklistId) {
         // 更新模式
-        await axios.put(`${API_BASE_URL}/platform_checklists/${checklistId}`, requestData);
+        await api.put(`${API_BASE_URL}/platform_checklists/${checklistId}`, requestData);
         console.log('Checklist updated successfully');
       } else {
         // 新增模式
-        await axios.post(`${API_BASE_URL}/platform_checklists`, requestData);
+        await api.post(`${API_BASE_URL}/platform_checklists`, requestData);
         console.log('Checklist created successfully');
       }
       navigate('/checklists');

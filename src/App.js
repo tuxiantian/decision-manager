@@ -11,6 +11,7 @@ import ArticleViewer from './components/ArticleViewer';
 import ChecklistList from './components/ChecklistList';
 import FlowchartDetail from './components/FlowchartDetail';
 import ChecklistForm from './components/ChecklistForm';
+import StatisticsDashboard from './components/StatisticsDashboard';
 import api from './components/api'; 
 
 function App() {
@@ -77,7 +78,7 @@ function App() {
               )}
         </nav>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<StatisticsDashboard />} />
           <Route path="/login" element={<LoginPage  onLogin={setUsername} />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/articles" element={<ArticleList />} />

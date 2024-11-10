@@ -5,11 +5,20 @@ import LogicErrorEdit from './LogicErrorEdit';
 const LogicErrorList = () => {
     const [errors, setErrors] = useState([]);
     const [selectedError, setSelectedError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const pageSize = 10;
 
     // 获取所有逻辑错误
     const fetchLogicErrors = async () => {
-        const response = await api.get('/api/logic_errors');
-        setErrors(response.data);
+        const response = await api.get('/api/logic_errors_page', {
+            params: {
+                page: currentPage,
+                page_size: pageSize
+            }
+        });
+        setErrors(response.data.data);
+        setTotalPages(response.data.total_pages);
     };
 
     // 打开编辑窗口
@@ -31,8 +40,20 @@ const LogicErrorList = () => {
     };
 
     useEffect(() => {
-        fetchLogicErrors();
-    }, []);
+        fetchLogicErrors(currentPage);
+    }, [currentPage]);
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(prevPage => prevPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(prevPage => prevPage - 1);
+        }
+    };
 
     return (
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
@@ -50,6 +71,13 @@ const LogicErrorList = () => {
                     </li>
                 ))}
             </ul>
+
+            <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '20px' }}>
+                <button onClick={handlePrevPage} disabled={currentPage === 1} className='green-button'>Previous</button>
+                <p>Page {currentPage} of {totalPages}</p>
+                <button onClick={handleNextPage} disabled={currentPage >= totalPages} className='green-button'>Next</button>
+            </div>
+
             {selectedError && (
                 <LogicErrorEdit                    
                     error={selectedError}

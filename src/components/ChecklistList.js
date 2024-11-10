@@ -109,9 +109,9 @@ const ChecklistList = () => {
         ))}
       </ul>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px auto' }}>
         <button onClick={handlePrevPage} disabled={currentPage === 1} className='green-button'>Previous</button>
-        <p>Page {currentPage} of {totalPages}</p>
+        <p style={{ margin: '0 10px', display: 'flex', alignItems: 'center' }}>Page {currentPage} of {totalPages}</p>
         <button onClick={handleNextPage} disabled={currentPage >= totalPages} className='green-button'>Next</button>
       </div>
     </div>

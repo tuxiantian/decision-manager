@@ -24,9 +24,10 @@ const FeedbackAdmin = () => {
         fetchFeedback(currentPage);
     }, [currentPage]);
 
-    const handleResponseSubmit = async (id) => {
-        await api.post(`/api/admin/feedback/${id}/respond`, { response });
-        setFeedbackList(feedbackList.map(fb => fb.id === id ? { ...fb, response, status: "已回复" } : fb));
+    const handleResponseSubmit = async (e) => {
+        e.preventDefault();
+        await api.post(`/api/admin/feedback/${selectedFeedback.id}/respond`, {'response':response });
+        fetchFeedback(currentPage);
         setSelectedFeedback(null);
     };
 
@@ -93,7 +94,7 @@ const FeedbackAdmin = () => {
                     <div style={styles.modal}>
 
                         <h3>回复反馈</h3>
-                        <form style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                        <form onSubmit={handleResponseSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <p>反馈内容: {selectedFeedback.description}</p>
                             <textarea
                                 style={{ height: '100px' }}
@@ -101,7 +102,7 @@ const FeedbackAdmin = () => {
                                 onChange={(e) => setResponse(e.target.value)}
                             />
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-                                <button onClick={() => handleResponseSubmit(selectedFeedback.id)} className='green-button'>提交回复</button>
+                                <button className='green-button'>提交回复</button>
                                 <button onClick={() => setSelectedFeedback(null)} className='gray-button'>取消</button>
 
                             </div>

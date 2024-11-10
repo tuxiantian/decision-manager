@@ -10,10 +10,10 @@ const LogicErrorList = () => {
     const pageSize = 10;
 
     // 获取所有逻辑错误
-    const fetchLogicErrors = async () => {
+    const fetchLogicErrors = async (page) => {
         const response = await api.get('/api/logic_errors_page', {
             params: {
-                page: currentPage,
+                page: page,
                 page_size: pageSize
             }
         });

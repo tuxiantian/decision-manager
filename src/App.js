@@ -13,6 +13,7 @@ import FlowchartDetail from './components/FlowchartDetail';
 import ChecklistForm from './components/ChecklistForm';
 import StatisticsDashboard from './components/StatisticsDashboard';
 import LogicErrorList from './components/LogicErrorList';
+import FeedbackAdmin from './components/FeedbackAdmin';
 import api from './components/api'; 
 
 function App() {
@@ -66,6 +67,7 @@ function App() {
           <Link className="nav-link" to="/logic-errors">LogicError List</Link>
           <Link className="nav-link" to="/ahp">AHPAnalysis List</Link>
           <Link className="nav-link" to="/todos">Todo List</Link>
+          <Link className="nav-link" to="/feedback">用户反馈管理</Link>
 
           {username ? (
                 <>
@@ -92,6 +94,7 @@ function App() {
           <Route path="/checklist-form" element={<ChecklistForm />} />
           <Route path="/checklist/update/:checklistId" element={<ChecklistForm />} />
           <Route path="/logic-errors" element={<LogicErrorList />} />
+          <Route path="/feedback" element={<FeedbackAdmin />} />
           {/* <Route path="/balanced-decisions" element={<BalancedDecision />} />
           <Route path="/decisions" element={<DecisionsList />} />
           <Route path="/ahp" element={<AHPAnalysis />} />

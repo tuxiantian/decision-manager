@@ -28,8 +28,6 @@ function StatisticsDashboard() {
     const [userData, setUserData] = useState(null);
     const [articleData, setArticleData] = useState(null);
     const [checklistData, setChecklistData] = useState(null);
-    const [decisionData, setDecisionData] = useState(null);
-    const [checklistDecisionData, setChecklistDecisionData] = useState(null);
 
     // Fetch data from API
     useEffect(() => {
@@ -47,16 +45,6 @@ function StatisticsDashboard() {
         api.get('/api/statistics/checklists?days=30')
             .then(response => setChecklistData(response.data))
             .catch(error => console.error('Error fetching checklist data:', error));
-
-        // Fetch decision data statistics
-        api.get('/api/statistics/decision_data?days=30')
-            .then(response => setDecisionData(response.data))
-            .catch(error => console.error('Error fetching decision data:', error));
-
-        // 新增：获取 Checklist Decision 数据
-        api.get('/api/statistics/checklist_decisions?days=30')
-            .then(response => setChecklistDecisionData(response.data))
-            .catch(error => console.error('Error fetching checklist decision data:', error));
 
     }, []);
 
@@ -103,27 +91,6 @@ function StatisticsDashboard() {
                     <h2>Total Checklists: {checklistData.total_checklists}</h2>
                     <h3>Total Clones: {checklistData.total_clones}</h3>
                     <Line data={formatChartData(checklistData.checklist_trend, 'Checklist Trend')} />
-                </div>
-            )}
-
-            {checklistDecisionData && ( // 新增图表
-                <div className="chart-container">
-                    <h2>Total Checklist Decisions: {checklistDecisionData.total_decisions}</h2>
-                    <Line data={formatChartData(checklistDecisionData.decision_trend, 'Checklist Decision Trend')} />
-                </div>
-            )}
-
-            {decisionData && (
-                <div className="chart-container">
-                    <h2>Total AHP Data: {decisionData.total_ahp_data}</h2>
-                    <Line data={formatChartData(decisionData.ahp_trend, 'AHP Data Trend')} />
-                </div>
-            )}
-
-            {decisionData && (
-                <div className="chart-container">
-                    <h3>Total Balanced Decision Data: {decisionData.total_balanced_decision_data}</h3>
-                    <Line data={formatChartData(decisionData.balanced_decision_trend, 'Balanced Decision Trend')} />
                 </div>
             )}
         </div>

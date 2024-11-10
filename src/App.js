@@ -14,6 +14,9 @@ import ChecklistForm from './components/ChecklistForm';
 import StatisticsDashboard from './components/StatisticsDashboard';
 import LogicErrorList from './components/LogicErrorList';
 import FeedbackAdmin from './components/FeedbackAdmin';
+import Ahp from './components/Ahp';
+import BalancedDecision from './components/BalancedDecision';
+import ChecklistDecision from './components/ChecklistDecision';
 import api from './components/api'; 
 
 function App() {
@@ -63,10 +66,9 @@ function App() {
           <Link className="nav-link" to="/balanced-decisions">BalancedDecision</Link>
           <Link className="nav-link" to="/articles">Article</Link>
           <Link className="nav-link" to="/checklists">Checklists</Link>
-          <Link className="nav-link" to="/decisions">Decisions List</Link>
+          <Link className="nav-link" to="/decisions">ChecklistDecision</Link>
           <Link className="nav-link" to="/logic-errors">LogicError List</Link>
           <Link className="nav-link" to="/ahp">AHPAnalysis List</Link>
-          <Link className="nav-link" to="/todos">Todo List</Link>
           <Link className="nav-link" to="/feedback">用户反馈管理</Link>
 
           {username ? (
@@ -95,15 +97,10 @@ function App() {
           <Route path="/checklist/update/:checklistId" element={<ChecklistForm />} />
           <Route path="/logic-errors" element={<LogicErrorList />} />
           <Route path="/feedback" element={<FeedbackAdmin />} />
-          {/* <Route path="/balanced-decisions" element={<BalancedDecision />} />
-          <Route path="/decisions" element={<DecisionsList />} />
-          <Route path="/ahp" element={<AHPAnalysis />} />
-          
-          
-          <Route path="/checklist/:checklistId" element={<ChecklistDetail />} />
-          <Route path="/history" element={<ChecklistAnswerHistory />} />
-          <Route path="/todos" element={<TodoList />} />
-           */}
+          <Route path="/ahp" element={<Ahp />} />
+          <Route path="/balanced-decisions" element={<BalancedDecision />} />
+          <Route path="/decisions" element={<ChecklistDecision />} />
+
         </Routes>
     </div>
   );

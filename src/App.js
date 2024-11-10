@@ -12,6 +12,7 @@ import ChecklistList from './components/ChecklistList';
 import FlowchartDetail from './components/FlowchartDetail';
 import ChecklistForm from './components/ChecklistForm';
 import StatisticsDashboard from './components/StatisticsDashboard';
+import LogicErrorList from './components/LogicErrorList';
 import api from './components/api'; 
 
 function App() {
@@ -58,10 +59,11 @@ function App() {
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' // 添加阴影效果
         }}>
           <Link className="nav-link" to="/">Home</Link>
-          <Link className="nav-link" to="/balanced-decisions">BalancedDecisionMaker</Link>
+          <Link className="nav-link" to="/balanced-decisions">BalancedDecision</Link>
           <Link className="nav-link" to="/articles">Article</Link>
           <Link className="nav-link" to="/checklists">Checklists</Link>
           <Link className="nav-link" to="/decisions">Decisions List</Link>
+          <Link className="nav-link" to="/logic-errors">LogicError List</Link>
           <Link className="nav-link" to="/ahp">AHPAnalysis List</Link>
           <Link className="nav-link" to="/todos">Todo List</Link>
 
@@ -89,6 +91,7 @@ function App() {
           <Route path="/checklist/flowchart/:checklistId" element={<FlowchartDetail />} />
           <Route path="/checklist-form" element={<ChecklistForm />} />
           <Route path="/checklist/update/:checklistId" element={<ChecklistForm />} />
+          <Route path="/logic-errors" element={<LogicErrorList />} />
           {/* <Route path="/balanced-decisions" element={<BalancedDecision />} />
           <Route path="/decisions" element={<DecisionsList />} />
           <Route path="/ahp" element={<AHPAnalysis />} />

@@ -29,7 +29,7 @@ const BalancedDecision = () => {
 
     useEffect(() => {
         // Fetch decision data statistics
-        api.get('/api/statistics/decision_data?days=30')
+        api.get('/api/statistics/balanced_decision_data?days=30')
             .then(response => setDecisionData(response.data))
             .catch(error => console.error('Error fetching decision data:', error));
 

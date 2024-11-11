@@ -1,0 +1,24 @@
+.ahp-container {
+    max-width: 800px; /* 限制组件最大宽度 */
+    margin: 0 auto;   /* 居中 */
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ahp-title {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px; /* 设置图表高度 */
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}

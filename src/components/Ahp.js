@@ -1,67 +1,56 @@
 import React, { useEffect, useState } from 'react';
+import { Bar } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
-    PointElement,
-    LineElement,
+    BarElement,
     Title,
     Tooltip,
     Legend
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import './StatisticsDashboard.css';
-import api from './api.js';
 
-// 注册必要的组件
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
-);
+import api from './api';
+import './Ahp.css';
+
+// 注册 Bar 图表所需的模块
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Ahp = () => {
-    const [decisionData, setDecisionData] = useState(null);
+    const [chartData, setChartData] = useState(null);
 
     useEffect(() => {
-        // Fetch decision data statistics
-        api.get('/api/statistics/decision_data?days=30')
-            .then(response => setDecisionData(response.data))
-            .catch(error => console.error('Error fetching decision data:', error));
-
-    }, []);
-    // Helper function to format data for Chart.js
-    const formatChartData = (trendData, label) => {
-        if (!trendData) return null;
-        const labels = trendData.map(item => item.date);
-        const data = trendData.map(item => item.count);
-
-        return {
-            labels,
-            datasets: [
-                {
-                    label,
-                    data,
-                    fill: false,
-                    borderColor: '#4bc0c0',
-                    tension: 0.1,
-                },
-            ],
+        const fetchData = async () => {
+            const response = await api.get('/api/statistics/ahp_data?days=30');
+            const data = response.data.ahp_trend;
+            const chartData = {
+                labels: data.map(item => item.date),
+                datasets: [
+                    {
+                        label: 'AHP Trend Count',
+                        data: data.map(item => item.count),
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        borderRadius: 5,
+                    },
+                ],
+            };
+            setChartData(chartData);
         };
-    };
+        fetchData();
+    }, []);
 
     return (
-        <div>
-            {decisionData && (
-                <div className="chart-container">
-                    <h2>Total AHP Data: {decisionData.total_ahp_data}</h2>
-                    <Line data={formatChartData(decisionData.ahp_trend, 'AHP Data Trend')} />
-                </div>
-            )}
+        <div className="ahp-container">
+            <h2 className="ahp-title">AHP 趋势图</h2>
+            <div className="chart-container">
+                {chartData ? (
+                    <Bar data={chartData} options={{ maintainAspectRatio: false }} />
+                ) : (
+                    <p>加载数据中...</p>
+                )}
+            </div>
         </div>
     );
 };

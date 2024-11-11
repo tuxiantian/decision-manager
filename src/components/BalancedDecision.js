@@ -1,67 +1,56 @@
 import React, { useEffect, useState } from 'react';
+import { Bar } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
-    PointElement,
-    LineElement,
+    BarElement,
     Title,
     Tooltip,
     Legend
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import './StatisticsDashboard.css';
-import api from './api.js';
 
-// 注册必要的组件
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
-);
+import api from './api';
+import './BalancedDecision.css';
+
+// 注册所需的图表模块
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const BalancedDecision = () => {
-    const [decisionData, setDecisionData] = useState(null);
+    const [chartData, setChartData] = useState(null);
 
     useEffect(() => {
-        // Fetch decision data statistics
-        api.get('/api/statistics/balanced_decision_data?days=30')
-            .then(response => setDecisionData(response.data))
-            .catch(error => console.error('Error fetching decision data:', error));
-
-    }, []);
-    // Helper function to format data for Chart.js
-    const formatChartData = (trendData, label) => {
-        if (!trendData) return null;
-        const labels = trendData.map(item => item.date);
-        const data = trendData.map(item => item.count);
-
-        return {
-            labels,
-            datasets: [
-                {
-                    label,
-                    data,
-                    fill: false,
-                    borderColor: '#4bc0c0',
-                    tension: 0.1,
-                },
-            ],
+        const fetchData = async () => {
+            const response = await api.get('/api/statistics/balanced_decision_data');
+            const data = response.data.balanced_decision_trend;
+            const chartData = {
+                labels: data.map(item => item.label),
+                datasets: [
+                    {
+                        label: 'Balanced Decision Data',
+                        data: data.map(item => item.value),
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        borderRadius: 5, // 设置圆角
+                    },
+                ],
+            };
+            setChartData(chartData);
         };
-    };
+        fetchData();
+    }, []);
 
     return (
-        <div>
-            {decisionData && (
-                <div className="chart-container">
-                    <h3>Total Balanced Decision Data: {decisionData.total_balanced_decision_data}</h3>
-                    <Line data={formatChartData(decisionData.balanced_decision_trend, 'Balanced Decision Trend')} />
-                </div>
-            )}
+        <div className="balanced-decision-container">
+            <h2 className="balanced-decision-title">平衡决策图表</h2>
+            <div className="chart-container">
+                {chartData ? (
+                    <Bar data={chartData} options={{ maintainAspectRatio: false }} />
+                ) : (
+                    <p>加载数据中...</p>
+                )}
+            </div>
         </div>
     );
 };

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -7,94 +8,93 @@ import {
     LineElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+
+import api from './api';
 import './StatisticsDashboard.css';
-import api from './api.js';
 
-// 注册必要的组件
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
-);
+// 注册所需的图表模块
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-function StatisticsDashboard() {
-    const [userData, setUserData] = useState(null);
-    const [articleData, setArticleData] = useState(null);
-    const [checklistData, setChecklistData] = useState(null);
+const StatisticsDashboard = () => {
+    const [usersData, setUsersData] = useState(null);
+    const [articlesData, setArticlesData] = useState(null);
+    const [checklistsData, setChecklistsData] = useState(null);
 
-    // Fetch data from API
     useEffect(() => {
-        // Fetch user statistics
-        api.get('/api/statistics/users?days=30')
-            .then(response => setUserData(response.data))
-            .catch(error => console.error('Error fetching user data:', error));
+        const fetchData = async () => {
+            const usersResponse = await api.get('/api/statistics/users?days=30');
+            const articlesResponse = await api.get('/api/statistics/articles?days=30');
+            const checklistsResponse = await api.get('/api/statistics/checklists?days=30');
 
-        // Fetch article statistics
-        api.get('/api/statistics/articles?days=30')
-            .then(response => setArticleData(response.data))
-            .catch(error => console.error('Error fetching article data:', error));
+            setUsersData({
+                labels: usersResponse.data.new_users_trend.map(item => item.date),
+                datasets: [
+                    {
+                        label: 'New Users',
+                        data: usersResponse.data.new_users_trend.map(item => item.count),
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.3,  // 使折线更平滑
+                        pointRadius: 3,
+                    },
+                ],
+            });
 
-        // Fetch checklist statistics
-        api.get('/api/statistics/checklists?days=30')
-            .then(response => setChecklistData(response.data))
-            .catch(error => console.error('Error fetching checklist data:', error));
+            setArticlesData({
+                labels: articlesResponse.data.new_articles_trend.map(item => item.date),
+                datasets: [
+                    {
+                        label: 'New Articles',
+                        data: articlesResponse.data.new_articles_trend.map(item => item.count),
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: 3,
+                    },
+                ],
+            });
 
-    }, []);
-
-    // Helper function to format data for Chart.js
-    const formatChartData = (trendData, label) => {
-        if (!trendData) return null;
-        const labels = trendData.map(item => item.date);
-        const data = trendData.map(item => item.count);
-
-        return {
-            labels,
-            datasets: [
-                {
-                    label,
-                    data,
-                    fill: false,
-                    borderColor: '#4bc0c0',
-                    tension: 0.1,
-                },
-            ],
+            setChecklistsData({
+                labels: checklistsResponse.data.checklist_trend.map(item => item.date),
+                datasets: [
+                    {
+                        label: 'New Checklists',
+                        data: checklistsResponse.data.checklist_trend.map(item => item.count),
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: 3,
+                    },
+                ],
+            });
         };
-    };
+        fetchData();
+    }, []);
 
     return (
         <div className="statistics-dashboard">
-            <h1>Statistics Dashboard</h1>
-
-            {userData && (
+            <h2 className="dashboard-title">统计仪表盘</h2>
+            <div className="chart-wrapper">
                 <div className="chart-container">
-                    <h2>Total Users: {userData.total_users}</h2>
-                    <Line data={formatChartData(userData.new_users_trend, 'New Users')} />
+                    <h3>新增用户趋势</h3>
+                    {usersData ? <Line data={usersData} options={{ maintainAspectRatio: false }} /> : <p>加载数据中...</p>}
                 </div>
-            )}
-
-            {articleData && (
                 <div className="chart-container">
-                    <h2>Total Articles: {articleData.total_articles}</h2>
-                    <Line data={formatChartData(articleData.new_articles_trend, 'New Articles')} />
+                    <h3>新增文章趋势</h3>
+                    {articlesData ? <Line data={articlesData} options={{ maintainAspectRatio: false }} /> : <p>加载数据中...</p>}
                 </div>
-            )}
-
-            {checklistData && (
                 <div className="chart-container">
-                    <h2>Total Checklists: {checklistData.total_checklists}</h2>
-                    <h3>Total Clones: {checklistData.total_clones}</h3>
-                    <Line data={formatChartData(checklistData.checklist_trend, 'Checklist Trend')} />
+                    <h3>新增清单趋势</h3>
+                    {checklistsData ? <Line data={checklistsData} options={{ maintainAspectRatio: false }} /> : <p>加载数据中...</p>}
                 </div>
-            )}
+            </div>
         </div>
     );
-}
+};
 
 export default StatisticsDashboard;

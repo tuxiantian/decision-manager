@@ -1,30 +1,38 @@
 .statistics-dashboard {
-    padding: 20px;
-    font-family: Arial, sans-serif;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  .chart-container {
-    margin-bottom: 40px;
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  h1 {
-    text-align: center;
-    margin-bottom: 30px;
-  }
-  
-  h2, h3 {
-    text-align: center;
-    margin-bottom: 10px;
-  }
-  
-  .chart-container canvas {
-    max-width: 100%;
-    height: auto;
-  }
-  
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f4f6f8;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-title {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.chart-wrapper {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.chart-container {
+  position: relative;
+  height: 350px;
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container h3 {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #555;
+}

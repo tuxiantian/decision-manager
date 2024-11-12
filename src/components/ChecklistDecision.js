@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import api from './api';
+import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -7,61 +9,50 @@ import {
     LineElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
-import './StatisticsDashboard.css';
-import api from './api.js';
 
-// 注册必要的组件
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
-);
+import './ChecklistDecision.css';
+
+// 注册所需的图表模块
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const ChecklistDecision = () => {
-    const [checklistDecisionData, setChecklistDecisionData] = useState(null);
+    const [chartData, setChartData] = useState(null);
 
     useEffect(() => {
-        // 新增：获取 Checklist Decision 数据
-        api.get('/api/statistics/checklist_decisions?days=30')
-            .then(response => setChecklistDecisionData(response.data))
-            .catch(error => console.error('Error fetching checklist decision data:', error));
-
-    }, []);
-    // Helper function to format data for Chart.js
-    const formatChartData = (trendData, label) => {
-        if (!trendData) return null;
-        const labels = trendData.map(item => item.date);
-        const data = trendData.map(item => item.count);
-
-        return {
-            labels,
-            datasets: [
-                {
-                    label,
-                    data,
-                    fill: false,
-                    borderColor: '#4bc0c0',
-                    tension: 0.1,
-                },
-            ],
+        const fetchData = async () => {
+            const response = await api.get('/api/statistics/checklist_decisions?days=30');
+            const data = response.data.decision_trend;
+            const chartData = {
+                labels: data.map(item => item.date),
+                datasets: [
+                    {
+                        label: 'Checklist Decision Trend',
+                        data: data.map(item => item.count),
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: 3,
+                    },
+                ],
+            };
+            setChartData(chartData);
         };
-    };
+        fetchData();
+    }, []);
 
     return (
-        <div>
-            {checklistDecisionData && ( // 新增图表
-                <div className="chart-container">
-                    <h2>Total Checklist Decisions: {checklistDecisionData.total_decisions}</h2>
-                    <Line data={formatChartData(checklistDecisionData.decision_trend, 'Checklist Decision Trend')} />
-                </div>
-            )}
+        <div className="checklist-decision-container">
+            <h2 className="checklist-decision-title">Checklist 决策趋势图</h2>
+            <div className="chart-container">
+                {chartData ? (
+                    <Line data={chartData} options={{ maintainAspectRatio: false }} />
+                ) : (
+                    <p>加载数据中...</p>
+                )}
+            </div>
         </div>
     );
 };

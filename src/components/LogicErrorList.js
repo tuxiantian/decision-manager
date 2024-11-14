@@ -7,6 +7,7 @@ const LogicErrorList = () => {
     const [selectedError, setSelectedError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [mode, setMode] = useState(''); // 'edit' 或 'add'
     const pageSize = 10;
 
     // 获取所有逻辑错误
@@ -21,11 +22,17 @@ const LogicErrorList = () => {
         setTotalPages(response.data.total_pages);
     };
 
+    // 打开新增逻辑错误的表单
+    const handleAddError = () => {
+        setSelectedError(null);
+        setMode('add'); // 设置为新增模式
+    };
+
     // 打开编辑窗口
     const handleEdit = (error) => {
         console.log("Editing error:", error);  // 调试日志
         setSelectedError(error);
-        
+        setMode('edit');
     };
 
     const closeModal = () => {
@@ -36,7 +43,7 @@ const LogicErrorList = () => {
     const handleUpdate = async (updatedError) => {
         await fetchLogicErrors();
         setSelectedError(null);
-       
+        setMode('');
     };
 
     useEffect(() => {
@@ -58,6 +65,7 @@ const LogicErrorList = () => {
     return (
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
             <h2>逻辑错误列表</h2>
+            <button onClick={handleAddError} className="green-button">新增逻辑谬误</button>
             <ul style={{ padding: '0', listStyleType: 'none' }}>
                 {errors.map((error) => (
                     <li key={error.id} style={{
@@ -78,8 +86,9 @@ const LogicErrorList = () => {
                 <button onClick={handleNextPage} disabled={currentPage >= totalPages} className='green-button'>Next</button>
             </div>
 
-            {selectedError && (
-                <LogicErrorEdit                    
+            {(selectedError||mode=='add') && (
+                <LogicErrorEdit
+                    mode={mode}
                     error={selectedError}
                     onClose={closeModal}
                     onUpdate={handleUpdate}

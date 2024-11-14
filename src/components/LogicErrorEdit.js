@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import api from './api.js'
 
-const LogicErrorEdit = ({ error, onClose, onUpdate }) => {
+const LogicErrorEdit = ({ mode,error, onClose, onUpdate }) => {
+
     const [formData, setFormData] = useState({
-        name: error.name,
-        term: error.term,
-        description: error.description,
-        example: error.example,
+        name:mode === 'edit'? error.name:'',
+        term:mode === 'edit'?  error.term:'',
+        description:mode === 'edit'?  error.description:'',
+        example:mode === 'edit'?  error.example:'',
     });
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -16,7 +18,12 @@ const LogicErrorEdit = ({ error, onClose, onUpdate }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        await api.put(`/api/logic_errors/${error.id}`, formData);
+        if (mode === 'edit'){
+            await api.put(`/api/logic_errors/${error.id}`, formData);
+        }else{
+            await api.post(`/api/logic_errors`, formData);
+        }
+
         onUpdate(formData);
         onClose(); // 关闭弹窗
     };
@@ -24,7 +31,7 @@ const LogicErrorEdit = ({ error, onClose, onUpdate }) => {
     return (
         <div style={styles.overlay}>
             <div style={styles.modal}>
-                <h3>编辑逻辑错误</h3>
+                <h3>{mode === 'edit' ? '编辑逻辑错误' : '新增逻辑错误'}</h3>
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <label style={{ marginRight: '10px' }}>名称：</label>

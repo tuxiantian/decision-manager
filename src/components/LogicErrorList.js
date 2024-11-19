@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { FaTimes } from 'react-icons/fa';
 import api from './api.js'
 import LogicErrorEdit from './LogicErrorEdit';
 
 const LogicErrorList = () => {
     const [errors, setErrors] = useState([]);
     const [selectedError, setSelectedError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [mode, setMode] = useState(''); // 'edit' 或 'add'
@@ -15,7 +17,8 @@ const LogicErrorList = () => {
         const response = await api.get('/api/logic_errors_page', {
             params: {
                 page: page,
-                page_size: pageSize
+                page_size: pageSize,
+                search: searchTerm
             }
         });
         setErrors(response.data.data);
@@ -35,8 +38,31 @@ const LogicErrorList = () => {
         setMode('edit');
     };
 
+    // 添加键盘事件的处理函数，回车键触发搜索
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleSearchButton();
+        }
+    };
+
+    const handleSearchButton = () => {
+        setCurrentPage(1);
+        fetchLogicErrors(1);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value.toLowerCase());
+    };
+
+    const handleClearSearch = () => {
+        setSearchTerm('');
+        setCurrentPage(1);
+        fetchLogicErrors(1);
+    };
+
     const closeModal = () => {
         setSelectedError(null);
+        setMode('');
     };
 
     // 更新逻辑错误列表
@@ -65,7 +91,35 @@ const LogicErrorList = () => {
     return (
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
             <h2>逻辑错误列表</h2>
-            <button onClick={handleAddError} className="green-button">新增逻辑谬误</button>
+            <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                    <input
+                        type="text"
+                        placeholder="Search by name, term"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        onKeyDown={handleKeyDown}  // 监听键盘事件
+                        style={{ width: '90%', padding: '10px', paddingRight: '40px' }}
+                    />
+                    {searchTerm && (
+                        <FaTimes
+                            onClick={handleClearSearch}
+                            style={{
+                                position: 'absolute',
+                                right: '10px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                cursor: 'pointer',
+                                color: '#999'
+                            }}
+                        />
+                    )}
+                </div>
+                <button onClick={handleSearchButton} style={{ padding: '10px' }} className='green-button'>Search</button>
+                <button onClick={handleAddError} style={{ marginLeft: '10px', padding: '10px' }} className="green-button">新增逻辑谬误</button>
+            </div>
+
+
             <ul style={{ padding: '0', listStyleType: 'none' }}>
                 {errors.map((error) => (
                     <li key={error.id} style={{
@@ -86,7 +140,7 @@ const LogicErrorList = () => {
                 <button onClick={handleNextPage} disabled={currentPage >= totalPages} className='green-button'>Next</button>
             </div>
 
-            {(selectedError||mode=='add') && (
+            {(selectedError || mode == 'add') && (
                 <LogicErrorEdit
                     mode={mode}
                     error={selectedError}

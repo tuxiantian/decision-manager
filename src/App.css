@@ -37,6 +37,10 @@
   }
 }
 
+li {
+  background-color: transparent !important;
+}
+
 /* 为导航栏设置 hover 样式 */
 .navbar-nav .nav-link {
   color: #ffffff;

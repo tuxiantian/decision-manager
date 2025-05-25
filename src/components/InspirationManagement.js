@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Modal, Button, Form, Alert, Table, Tabs, Tab } from 'react-bootstrap';
+import { Modal, Button, Form, Alert, Table, Tabs, Tab, Pagination, InputGroup, FormControl } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap-icons/font/bootstrap-icons.css";
 import './InspirationManagement.css';
 
 import { API_BASE_URL } from '../config';
@@ -17,17 +18,43 @@ export default function InspirationManagement() {
         content: ''
     });
 
-    // 获取所有启发内容
+    // 分页和搜索状态
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10); // 每页显示的项目数
+    const [totalItems, setTotalItems] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchType, setSearchType] = useState('all'); // 'all', 'text', 'image'
+
+    // 获取所有启发内容（带分页和搜索）
     const fetchInspirations = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/api/admin/inspirations');
-            setInspirations(response.data);
+            const params = {
+                page: currentPage,
+                per_page: itemsPerPage,
+                search: searchTerm,
+                type: searchType === 'all' ? undefined : searchType
+            };
+
+            const response = await api.get('/api/admin/inspirations', { params });
+            setInspirations(response.data.data || response.data);
+            setTotalItems(response.data.total || response.data.length);
         } catch (err) {
             setError(err.response?.data?.error || err.message);
         } finally {
             setLoading(false);
         }
+    };
+
+    // 当页码、搜索条件或类型过滤变化时重新获取数据
+    useEffect(() => {
+        fetchInspirations();
+    }, [currentPage, searchTerm, searchType]);
+
+    // 重置页码到第一页并重新搜索
+    const handleSearch = () => {
+        setCurrentPage(1);
+        fetchInspirations();
     };
 
     // 提交表单
@@ -60,11 +87,6 @@ export default function InspirationManagement() {
             alert(err.response?.data?.error || err.message);
         }
     };
-
-    // 初始化加载
-    useEffect(() => {
-        fetchInspirations();
-    }, []);
 
     // 处理表单输入
     const handleInputChange = (e) => {
@@ -125,7 +147,7 @@ export default function InspirationManagement() {
             setFormData({
                 ...formData,
                 content: response.data.url,
-                type:'image'
+                type: 'image'
             });
         } catch (err) {
             setError(err.response?.data?.error || err.message);
@@ -255,6 +277,47 @@ export default function InspirationManagement() {
         </Form>
     );
 
+    // 计算总页数
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    // 生成分页项
+    const renderPagination = () => {
+        let items = [];
+
+        // 上一页按钮
+        items.push(
+            <Pagination.Prev
+                key="prev"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+            />
+        );
+
+        // 页码按钮
+        for (let number = 1; number <= totalPages; number++) {
+            items.push(
+                <Pagination.Item
+                    key={number}
+                    active={number === currentPage}
+                    onClick={() => setCurrentPage(number)}
+                >
+                    {number}
+                </Pagination.Item>
+            );
+        }
+
+        // 下一页按钮
+        items.push(
+            <Pagination.Next
+                key="next"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+            />
+        );
+
+        return <Pagination>{items}</Pagination>;
+    };
+
     if (loading) return <div className="loading">加载中...</div>;
     if (error) return <Alert variant="danger">错误: {error}</Alert>;
 
@@ -267,7 +330,69 @@ export default function InspirationManagement() {
                 </Button>
             </div>
 
-            <Table striped bordered hover>
+            {/* 搜索和过滤区域 */}
+            <div className="search-container mb-4">
+                <InputGroup>
+                    {/* 类型过滤选项放在左边 */}
+                    <InputGroup.Text>
+                        <div className="filter-options" style={{ whiteSpace: 'nowrap' }}>
+                            <Form.Check
+                                inline
+                                type="radio"
+                                label="全部"
+                                name="typeFilter"
+                                checked={searchType === 'all'}
+                                onChange={() => setSearchType('all')}
+                                className="me-2"
+                            />
+                            <Form.Check
+                                inline
+                                type="radio"
+                                label="文字"
+                                name="typeFilter"
+                                checked={searchType === 'text'}
+                                onChange={() => setSearchType('text')}
+                                className="me-2"
+                            />
+                            <Form.Check
+                                inline
+                                type="radio"
+                                label="图片"
+                                name="typeFilter"
+                                checked={searchType === 'image'}
+                                onChange={() => setSearchType('image')}
+                            />
+                        </div>
+                    </InputGroup.Text>
+
+                    {/* 搜索框 */}
+                    <FormControl
+                        placeholder="搜索启发内容..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                        style={{ maxWidth: '600px' }} // 限制搜索框宽度
+                    />
+                    {/* 清空按钮 - 只在有内容时显示 */}
+                    {searchTerm && (
+                        <InputGroup.Text
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => {
+                                setSearchTerm('');
+                                handleSearch(); // 清空后立即触发搜索
+                            }}
+                        >
+                            <i className="bi bi-x-lg"></i> {/* 使用Bootstrap图标 */}
+                        </InputGroup.Text>
+                    )}
+                    {/* 搜索按钮 */}
+                    <Button variant="outline-secondary" onClick={handleSearch}>
+                        搜索
+                    </Button>
+                </InputGroup>
+            </div>
+
+            <Table striped bordered hover responsive>
                 <thead>
                     <tr>
                         <th width="10%">类型</th>
@@ -312,12 +437,19 @@ export default function InspirationManagement() {
                 </tbody>
             </Table>
 
+            {/* 分页控件 */}
+            {totalPages > 1 && (
+                <div className="pagination-container d-flex justify-content-center mt-4">
+                    {renderPagination()}
+                </div>
+            )}
+
             {/* 添加/编辑模态框 */}
             <Modal
                 show={showModal}
                 onHide={() => setShowModal(false)}
-                centered // 添加centered属性确保垂直居中
-                size="lg" // 控制模态框大小
+                centered
+                size="lg"
             >
                 <Modal.Header closeButton className="border-0 pb-0">
                     <Modal.Title className="h5">

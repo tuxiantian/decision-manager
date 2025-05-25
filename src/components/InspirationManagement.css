@@ -46,12 +46,12 @@
     .content-cell {
         max-width: 150px;
     }
-    
+
     .header {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .header h2 {
         margin-bottom: 10px;
     }
@@ -108,3 +108,51 @@
     max-width: 100%;
     max-height: 200px;
 }
+
+.search-container {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.filter-options {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .search-container {
+        padding: 10px;
+    }
+
+    .filter-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    InputGroup {
+        flex-direction: column;
+    }
+
+    InputGroup>* {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}
+
+/* 在CSS文件中添加 */
+.search-container .input-group-text:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .bi-x-lg {
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+  
+  .bi-x-lg:hover {
+    color: #212529;
+  }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Modal, Button, Form, Alert, Table } from 'react-bootstrap';
+import { Modal, Button, Form, Alert, Table, Tabs, Tab } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './InspirationManagement.css';
 
@@ -95,6 +95,166 @@ export default function InspirationManagement() {
         setShowModal(true);
     };
 
+    // 新增状态
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [activeTab, setActiveTab] = useState('url'); // 'url' 或 'upload'
+
+    // 处理文件上传
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploading(true);
+        setUploadProgress(0);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await api.post('/upload', formData, {
+                onUploadProgress: (progressEvent) => {
+                    const percentCompleted = Math.round(
+                        (progressEvent.loaded * 100) / progressEvent.total
+                    );
+                    setUploadProgress(percentCompleted);
+                }
+            });
+
+            // 更新表单数据
+            setFormData({
+                ...formData,
+                content: response.data.url,
+                type:'image'
+            });
+        } catch (err) {
+            setError(err.response?.data?.error || err.message);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    // 修改模态框中的图片输入部分
+    const renderImageInput = () => (
+        <Tabs
+            activeKey={activeTab}
+            onSelect={(k) => setActiveTab(k)}
+            className="mb-3"
+        >
+            <Tab eventKey="url" title="外部图片URL">
+                <Form.Control
+                    type="url"
+                    name="content"
+                    value={formData.content}
+                    onChange={handleInputChange}
+                    required={formData.type === 'image' && activeTab === 'url'}
+                    placeholder="https://example.com/image.jpg"
+                    className="mb-3"
+                />
+            </Tab>
+            <Tab eventKey="upload" title="上传本地图片">
+                <div className="upload-area">
+                    {uploading ? (
+                        <div className="progress-container">
+                            <div className="progress-bar" style={{ width: `${uploadProgress}%` }} />
+                            <span>上传中: {uploadProgress}%</span>
+                        </div>
+                    ) : (
+                        <>
+                            <Form.Control
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileUpload}
+                                className="mb-2"
+                            />
+                            <small className="text-muted">
+                                支持 JPG, PNG, GIF 格式，最大 5MB
+                            </small>
+                        </>
+                    )}
+                </div>
+            </Tab>
+        </Tabs>
+    );
+
+    // 修改模态框中的内容部分
+    const renderContentInput = () => {
+        if (formData.type === 'text') {
+            return (
+                <Form.Control
+                    as="textarea"
+                    rows={5}
+                    name="content"
+                    value={formData.content}
+                    onChange={handleInputChange}
+                    required
+                    className="mb-3"
+                    placeholder="请输入启发性的文字内容..."
+                />
+            );
+        } else {
+            return (
+                <>
+                    {renderImageInput()}
+                    {formData.content && (
+                        <div className="image-preview">
+                            <div className="text-muted small mb-2">图片预览：</div>
+                            <img
+                                src={formData.content}
+                                alt="预览"
+                                className="img-thumbnail"
+                                onError={(e) => e.target.src = '/placeholder-image.jpg'}
+                            />
+                        </div>
+                    )}
+                </>
+            );
+        }
+    };
+
+    // 修改表单部分
+    const renderForm = () => (
+        <Form onSubmit={handleSubmit}>
+            <Form.Group controlId="formType" className="mb-4">
+                <Form.Label>内容类型</Form.Label>
+                <Form.Control
+                    as="select"
+                    name="type"
+                    value={formData.type}
+                    onChange={handleInputChange}
+                    className="form-select"
+                >
+                    <option value="text">文字</option>
+                    <option value="image">图片</option>
+                </Form.Control>
+            </Form.Group>
+
+            <Form.Group controlId="formContent" className="mb-3">
+                <Form.Label>
+                    {formData.type === 'text' ? '启发文字内容' : '图片'}
+                </Form.Label>
+                {renderContentInput()}
+            </Form.Group>
+
+            <Modal.Footer className="border-0 pt-0">
+                <Button
+                    variant="outline-secondary"
+                    onClick={() => setShowModal(false)}
+                    className="me-2"
+                >
+                    取消
+                </Button>
+                <Button
+                    variant="primary"
+                    type="submit"
+                    disabled={uploading}
+                >
+                    {currentInspiration ? '保存更改' : '添加启发'}
+                </Button>
+            </Modal.Footer>
+        </Form>
+    );
+
     if (loading) return <div className="loading">加载中...</div>;
     if (error) return <Alert variant="danger">错误: {error}</Alert>;
 
@@ -166,79 +326,7 @@ export default function InspirationManagement() {
                 </Modal.Header>
 
                 <Modal.Body className="pt-0">
-                    <Form onSubmit={handleSubmit}>
-                        <Form.Group controlId="formType" className="mb-4">
-                            <Form.Label>内容类型</Form.Label>
-                            <Form.Control
-                                as="select"
-                                name="type"
-                                value={formData.type}
-                                onChange={handleInputChange}
-                                className="form-select"
-                            >
-                                <option value="text">文字</option>
-                                <option value="image">图片</option>
-                            </Form.Control>
-                        </Form.Group>
-
-                        <Form.Group controlId="formContent" className="mb-3">
-                            <Form.Label>
-                                {formData.type === 'text' ? '启发文字内容' : '图片URL地址'}
-                            </Form.Label>
-
-                            {formData.type === 'text' ? (
-                                <Form.Control
-                                    as="textarea"
-                                    rows={5}
-                                    name="content"
-                                    value={formData.content}
-                                    onChange={handleInputChange}
-                                    required
-                                    className="mb-3"
-                                    placeholder="请输入启发性的文字内容..."
-                                />
-                            ) : (
-                                <>
-                                    <Form.Control
-                                        type="url"
-                                        name="content"
-                                        value={formData.content}
-                                        onChange={handleInputChange}
-                                        required
-                                        placeholder="https://example.com/image.jpg"
-                                        className="mb-3"
-                                    />
-                                    {formData.content && (
-                                        <div className="image-preview">
-                                            <div className="text-muted small mb-2">图片预览：</div>
-                                            <img
-                                                src={formData.content}
-                                                alt="预览"
-                                                className="img-thumbnail"
-                                                onError={(e) => e.target.src = '/placeholder-image.jpg'}
-                                            />
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </Form.Group>
-
-                        <Modal.Footer className="border-0 pt-0">
-                            <Button
-                                variant="outline-secondary"
-                                onClick={() => setShowModal(false)}
-                                className="me-2"
-                            >
-                                取消
-                            </Button>
-                            <Button
-                                variant="primary"
-                                type="submit"
-                            >
-                                {currentInspiration ? '保存更改' : '添加启发'}
-                            </Button>
-                        </Modal.Footer>
-                    </Form>
+                    {renderForm()}
                 </Modal.Body>
             </Modal>
         </div>

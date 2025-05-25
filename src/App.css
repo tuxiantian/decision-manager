@@ -366,7 +366,6 @@ li {
   padding: 20px;
   border-radius: 8px;
   width: 100%;
-  max-width: 500px;  /* 最大宽度，避免模态框过宽 */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 添加阴影提升层次感 */
   text-align: center;
   color: #333; /* 确保字体颜色清晰 */

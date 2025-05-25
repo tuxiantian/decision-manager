@@ -70,7 +70,6 @@ const ChecklistList = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <h2>Checklist List</h2>
       <ul style={{ listStyle: 'none', padding: 0, width: '80%' }}>
         {checklists.map(checklist => (
           <li key={checklist.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', borderBottom: '1px solid #ccc' }}>

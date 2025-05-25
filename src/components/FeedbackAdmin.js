@@ -45,7 +45,6 @@ const FeedbackAdmin = () => {
 
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
-            <h2>用户反馈管理</h2>
             {/* 添加标题行 */}
             <div style={{
                 display: 'flex',

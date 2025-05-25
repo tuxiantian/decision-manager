@@ -1,0 +1,58 @@
+.inspiration-management {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.2rem;
+}
+
+.content-cell {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.thumbnail {
+    max-width: 100px;
+    max-height: 60px;
+    object-fit: cover;
+}
+
+.image-preview img {
+    max-width: 100%;
+    max-height: 200px;
+    display: block;
+    margin-top: 10px;
+}
+
+.ml-2 {
+    margin-left: 8px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .content-cell {
+        max-width: 150px;
+    }
+    
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .header h2 {
+        margin-bottom: 10px;
+    }
+}

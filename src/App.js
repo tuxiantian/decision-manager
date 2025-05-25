@@ -17,6 +17,7 @@ import FeedbackAdmin from './components/FeedbackAdmin';
 import Ahp from './components/Ahp';
 import BalancedDecision from './components/BalancedDecision';
 import ChecklistDecision from './components/ChecklistDecision';
+import InspirationManagement from './components/InspirationManagement';
 import api from './components/api'; 
 
 function App() {
@@ -62,24 +63,25 @@ function App() {
           padding: '10px 0',        // 导航栏内填充
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' // 添加阴影效果
         }}>
-          <Link className="nav-link" to="/">Home</Link>
-          <Link className="nav-link" to="/balanced-decisions">BalancedDecision</Link>
-          <Link className="nav-link" to="/articles">Article</Link>
-          <Link className="nav-link" to="/checklists">Checklists</Link>
-          <Link className="nav-link" to="/decisions">ChecklistDecision</Link>
-          <Link className="nav-link" to="/logic-errors">LogicError List</Link>
-          <Link className="nav-link" to="/ahp">AHPAnalysis List</Link>
-          <Link className="nav-link" to="/feedback">用户反馈管理</Link>
+          <Link className="my-nav-link" to="/">Home</Link>
+          <Link className="my-nav-link" to="/balanced-decisions">BalancedDecision</Link>
+          <Link className="my-nav-link" to="/articles">Article</Link>
+          <Link className="my-nav-link" to="/checklists">Checklists</Link>
+          <Link className="my-nav-link" to="/decisions">ChecklistDecision</Link>
+          <Link className="my-nav-link" to="/logic-errors">LogicError List</Link>
+          <Link className="my-nav-link" to="/ahp">AHPAnalysis List</Link>
+          <Link className="my-nav-link" to="/inspirations">启发管理</Link>
+          <Link className="my-nav-link" to="/feedback">用户反馈管理</Link>
 
           {username ? (
                 <>
-                  <Link className="nav-link" disabled>Welcome, {username}</Link>
-                  <Link className="nav-link" onClick={handleLogout}>Logout</Link>
+                  <Link className="my-nav-link" disabled>Welcome, {username}</Link>
+                  <Link className="my-nav-link" onClick={handleLogout}>Logout</Link>
                 </>
               ) : (
                 <>
-                  <Link className="nav-link" as={Link} to="/login">Login</Link>
-                  <Link className="nav-link" as={Link} to="/register">Register</Link>
+                  <Link className="my-nav-link" as={Link} to="/login">Login</Link>
+                  <Link className="my-nav-link" as={Link} to="/register">Register</Link>
                 </>
               )}
         </nav>
@@ -97,6 +99,7 @@ function App() {
           <Route path="/checklist/update/:checklistId" element={<ChecklistForm />} />
           <Route path="/logic-errors" element={<LogicErrorList />} />
           <Route path="/feedback" element={<FeedbackAdmin />} />
+          <Route path="/inspirations" element={<InspirationManagement />} />
           <Route path="/ahp" element={<Ahp />} />
           <Route path="/balanced-decisions" element={<BalancedDecision />} />
           <Route path="/decisions" element={<ChecklistDecision />} />

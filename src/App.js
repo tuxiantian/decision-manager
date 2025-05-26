@@ -63,13 +63,13 @@ function App() {
           padding: '10px 0',        // 导航栏内填充
           boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' // 添加阴影效果
         }}>
-          <Link className="my-nav-link" to="/">Home</Link>
-          <Link className="my-nav-link" to="/balanced-decisions">BalancedDecision</Link>
-          <Link className="my-nav-link" to="/articles">Article</Link>
-          <Link className="my-nav-link" to="/checklists">Checklists</Link>
-          <Link className="my-nav-link" to="/decisions">ChecklistDecision</Link>
-          <Link className="my-nav-link" to="/logic-errors">LogicError List</Link>
-          <Link className="my-nav-link" to="/ahp">AHPAnalysis List</Link>
+          <Link className="my-nav-link" to="/">首页</Link>
+          <Link className="my-nav-link" to="/balanced-decisions">平衡决策</Link>
+          <Link className="my-nav-link" to="/articles">文章</Link>
+          <Link className="my-nav-link" to="/checklists">决策清单</Link>
+          <Link className="my-nav-link" to="/decisions">决定</Link>
+          <Link className="my-nav-link" to="/logic-errors">逻辑错误</Link>
+          <Link className="my-nav-link" to="/ahp">AHP分析</Link>
           <Link className="my-nav-link" to="/inspirations">启发管理</Link>
           <Link className="my-nav-link" to="/feedback">用户反馈管理</Link>
 

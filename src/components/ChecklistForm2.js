@@ -1,19 +1,32 @@
-import React, { useState, useEffect, useRef  , useCallback} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
+import mermaid from 'mermaid';
+import { API_BASE_URL } from '../config.js';
 import api from './api.js'
 import './ChecklistForm.css';
-import DecisionFlowTool from './DecisionFlowTool'; // 引入新的流程图组件
 
+// 初始化 Mermaid 配置
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'default',
+  themeCSS: `
+        .nodeLabel  p {
+          white-space: pre-wrap;         /* 强制长文本换行 */
+        }
+   `,
+  flowchart: { curve: 'linear' },
+  securityLevel: 'loose',
+});
 
 const ChecklistForm = () => {
   const { checklistId } = useParams();  // 获取路由中的 checklistId 参数
   const [checklistName, setChecklistName] = useState('');
   const [description, setDescription] = useState('');
   const [questions, setQuestions] = useState([{ question: '', description: '' }]);
+  const [mermaidCode, setMermaidCode] = useState('');
   const [activeTab, setActiveTab] = useState('form');
+  const [renderError, setRenderError] = useState(null);
   const mermaidContainerRef = useRef(null);
-  const [flowData, setFlowData] = useState({});
   const navigate = useNavigate();
 
   // 根据 checklistId 判断是否为更新模式，并在组件加载时获取数据
@@ -24,23 +37,11 @@ const ChecklistForm = () => {
           const data = response.data;
           setChecklistName(data.name);
           setDescription(data.description);
+          setMermaidCode(data.mermaid_code);
           setQuestions(data.questions.map(q => ({
             question: q.question,
             description: q.description || '',
           })));
-          // 尝试解析mermaid_code字段，它现在存储的是流程图数据的JSON字符串
-          if (data.mermaid_code) {
-            try {
-              const parsedFlowData = JSON.parse(data.mermaid_code);
-              setFlowData(parsedFlowData);
-            } catch (e) {
-              console.error('Failed to parse flow data', e);
-              // 如果解析失败，使用空数据
-              setFlowData({ nodes: [], connections: [] });
-            }
-          } else {
-            setFlowData({ nodes: [], connections: [] });
-          }
         })
         .catch(error => {
           console.error('There was an error fetching the checklist details!', error);
@@ -48,9 +49,31 @@ const ChecklistForm = () => {
     }
   }, [checklistId]);
 
-  const handleFlowChange = useCallback((nodes, connections) => {
-    setFlowData({ nodes, connections });
-  }, []); // 依赖数组为空，函数引用永远不变
+  // 独立函数处理 Mermaid 渲染
+  const renderMermaid = async () => {
+    if (mermaidCode && mermaidCode.trim() && mermaidContainerRef.current) {
+      try {
+        setRenderError(null); // 清除之前的错误信息
+
+        // Mermaid 渲染：对指定容器进行渲染
+        const { svg } = await mermaid.render('generatedDiagram', mermaidCode);
+        if (mermaidContainerRef.current) {
+          mermaidContainerRef.current.innerHTML = svg;
+        }
+      } catch (e) {
+        console.error('Mermaid rendering error:', e);
+        setRenderError('Mermaid rendering error: Unable to render the flowchart. Please check your syntax.');
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (mermaidCode && mermaidCode.trim()) {
+      setTimeout(() => {
+        renderMermaid();
+      }, 100);
+    }
+  }, [mermaidCode]);
 
   const handleAddQuestion = () => {
     setQuestions([...questions, { question: '', description: '' }]);
@@ -71,6 +94,15 @@ const ChecklistForm = () => {
     const newQuestions = [...questions];
     newQuestions[index].description = value;
     setQuestions(newQuestions);
+  };
+
+  const handlePreviewFlowchart = () => {
+    if (mermaidCode && mermaidCode.trim()) {
+      setRenderError(null); // 清除之前的错误信息
+      renderMermaid(); // 触发渲染逻辑
+    } else {
+      setRenderError('Mermaid code cannot be empty');
+    }
   };
 
   const moveQuestionUp = (index) => {
@@ -96,7 +128,7 @@ const ChecklistForm = () => {
         name: checklistName,
         description,
         questions,
-        mermaid_code: JSON.stringify(flowData),
+        mermaid_code: mermaidCode,
         user_id: 1,
       }
       if (checklistId) {
@@ -136,15 +168,25 @@ const ChecklistForm = () => {
 
       {activeTab === 'flowchart' && (
         <div className="tab-content">
-          <div className="flowchart-container">
-            <DecisionFlowTool
-              // 传递初始数据
-              initialNodes={flowData.nodes}
-              initialConnections={flowData.connections}
-              // 当流程图数据改变时，更新flowData状态
-              onFlowChange={handleFlowChange}
-            />
-          </div>
+          <h3>Mermaid Flowchart Editor</h3>
+          <textarea
+            value={mermaidCode}
+            onChange={(e) => setMermaidCode(e.target.value)}
+            rows="10"
+            cols="50"
+            style={{ width: '100%', marginBottom: '20px' }}
+          />
+          <button className="preview-btn" onClick={handlePreviewFlowchart}>Preview Flowchart</button>
+          {renderError && (
+            <div style={{ color: 'red', marginTop: '10px' }}>
+              <strong>Error:</strong> {renderError}
+            </div>
+          )}
+          <div
+            className="mermaid-preview"
+            ref={mermaidContainerRef}
+            style={{ marginTop: '20px', minHeight: '200px', border: '1px solid #ccc', padding: '10px' }}
+          ></div>
         </div>
       )}
 

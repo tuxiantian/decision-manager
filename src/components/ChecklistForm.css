@@ -1,11 +1,47 @@
 .checklist-form {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 10px;
     background-color: #f9f9f9;
   }
+/* 增加流程图容器样式 */
+.flowchart-container {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+/* 调整标签页内容样式 */
+.tab-content {
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 0 8px 8px 8px;
+  background-color: white;
+  min-height: 650px;
+  /* 确保有足够的高度 */
+}
+
+.checklist-form-group {
+  margin-bottom: 15px;
+}
+
+.checklist-form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.checklist-form-group input,
+.checklist-form-group textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
   
   .form-group {
     margin-bottom: 15px;

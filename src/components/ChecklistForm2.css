@@ -1,0 +1,174 @@
+.checklist-form {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.questions-group {
+  margin-bottom: 15px;
+}
+
+.question-item input {
+  display: block;
+  width: 100%;
+  /* 占据整个宽度 */
+  margin-top: 5px;
+}
+
+.description-textarea {
+  display: block;
+  width: 100%;
+  /* 占据整个宽度 */
+  margin-top: 10px;
+  /* 与上方输入框保持间距 */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+  /* 允许用户垂直调整大小 */
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+
+.add-btn,
+.submit-btn {
+  display: inline-block;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.remove-btn {
+  display: inline-block;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #dc3545;
+  margin-left: 10px;
+  line-height: 1;
+  /* 控制 line-height 以确保居中 */
+}
+
+.move-btn {
+  padding: 5px 10px;
+  margin-left: 5px;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.move-btn:hover {
+  background-color: #2980b9;
+}
+
+.move-btn[disabled] {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.add-btn {
+  background-color: #28a745;
+}
+
+.buttons-group {
+  display: flex;
+  gap: 10px;
+  /* 按钮之间的间距 */
+  margin-top: 20px;
+}
+
+.submit-btn,
+.cancel-btn {
+  background-color: #4CAF50;
+  /* 提交按钮颜色 */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-btn:hover,
+.submit-btn:hover,
+.cancel-btn:hover {
+  opacity: 0.8;
+}
+
+.tabs-container {
+  margin-bottom: 20px;
+}
+
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  border-bottom: 2px solid #ccc;
+}
+
+.tab-button {
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 5px 5px 0 0;
+  transition: background-color 0.3s ease;
+}
+
+.tab-button.active {
+  background-color: #2196F3;
+  color: white;
+  font-weight: bold;
+}
+
+.tab-button:hover {
+  background-color: #1976D2;
+  color: white;
+}
+
+.preview-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 5px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.preview-btn:hover {
+  background-color: #45a049;
+}

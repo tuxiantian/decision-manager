@@ -1,165 +1,179 @@
 /* 容器样式 */
 .decision-flow-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  font-family: 'Arial, sans-serif';
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    font-family: 'Arial, sans-serif';
+    pointer-events: auto;
 }
+
+/* 确保SVG背景元素可以穿透点击 */
+svg {
+    pointer-events: none;
+}
+
+/* 但连接线需要可以点击 */
+line {
+    pointer-events: visibleStroke;
+}
+
 /* 顶部操作栏 */
 .toolbar-top {
-  padding: 6px 12px;
-  background-color: #2c3e50;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: white;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  z-index: 100;
-  height: 40px;
+    padding: 6px 12px;
+    background-color: #2c3e50;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    height: 40px;
 }
 
 /* 工具栏 */
 .toolbar-main {
-  padding: 6px;
-  background-color: #f0f0f0;
-  display: flex;
-  gap: 8px;
-  border-bottom: 1px solid #ddd;
-  z-index: 100;
-  height: 36px;
+    padding: 6px;
+    background-color: #f0f0f0;
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid #ddd;
+    z-index: 100;
+    height: 36px;
 }
 
 /* 按钮基础样式 */
 .tool-button {
-  padding: 6px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
 }
 
 /* 空状态提示样式 */
 .empty-state {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  max-width: 500px;
-  padding: 20px;
-  z-index: 50;
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    max-width: 500px;
+    padding: 20px;
+    z-index: 50;
 }
 
 .node-number {
-  position: absolute;
-  top: 4px;
-  right: 8px;
-  font-size: 10px;
-  color: #fff;
-  user-select: none;
-  border-radius: 10px;
-  padding: 3px 8px;
-  font-weight: bold;
-  display: none; /* 默认隐藏 */
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    font-size: 10px;
+    color: #fff;
+    user-select: none;
+    border-radius: 10px;
+    padding: 3px 8px;
+    font-weight: bold;
+    display: none;
+    /* 默认隐藏 */
 }
 
 /* 节点文本区域样式 */
 .node-textarea {
-  width: 100%;
-  height: 100%;
-  border: none;
-  outline: none;
-  resize: none;
-  font-family: inherit;
-  font-size: 12px;
-  background-color: transparent;
-  cursor: text;
-  line-height: 1.5;
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: inherit;
+    font-size: 12px;
+    background-color: transparent;
+    cursor: text;
+    line-height: 1.5;
 }
 
 /* 节点文本显示区域 */
 .node-text-display {
-  white-space: pre-wrap;
-  cursor: text;
-  min-height: 100%;
-  user-select: none;
-  font-size: 12px;
-  line-height: 1.5;
+    white-space: pre-wrap;
+    cursor: text;
+    min-height: 100%;
+    user-select: none;
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 .notification {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 20px;
-  color: white;
-  border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .delete-button {
-  padding: 4px 8px;
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.2s;
-  font-size: 12px;
+    padding: 4px 8px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+    font-size: 12px;
 }
 
 .delete-button:hover {
-  background-color: #c0392b;
-  transform: scale(1.05);
+    background-color: #c0392b;
+    transform: scale(1.05);
 }
 
 /* 操作提示样式 */
 .selection-hint {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 8px 16px;
-  background-color: rgba(231, 76, 60, 0.9);
-  color: white;
-  border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  animation: pulse 1.5s infinite;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 16px;
+    background-color: rgba(231, 76, 60, 0.9);
+    color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: fadeInOut 3s forwards;
 }
 
 .footer {
-  padding: 4px 12px;
-  background-color: #2c3e50;
-  color: #ecf0f1;
-  font-size: 10px;
-  text-align: center;
-  border-top: 1px solid #34495e;
-  height: 40px; /* 固定高度 */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+    padding: 4px 12px;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    font-size: 10px;
+    text-align: center;
+    border-top: 1px solid #34495e;
+    height: 40px;
+    /* 固定高度 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* 页脚版权信息样式 */
 .footer-copyright {
-  margin-top: 5px;
-  font-size: 9px;
-  opacity: 0.7;
+    margin-top: 5px;
+    font-size: 9px;
+    opacity: 0.7;
 }
 
 @keyframes pulse {
@@ -173,6 +187,28 @@
 
     100% {
         opacity: 0.9;
+    }
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+
+    10% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    90% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
     }
 }
 

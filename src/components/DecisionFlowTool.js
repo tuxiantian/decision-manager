@@ -19,10 +19,30 @@ const DecisionFlowTool = ({
     const [deletedItems, setDeletedItems] = useState(null);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [dragStartPos, setDragStartPos] = useState(null);
+    const [canvasTransform, setCanvasTransform] = useState({
+        translateX: 0,
+        translateY: 0,
+        scale: 1
+    });
+    const [isPanning, setIsPanning] = useState(false);
+    const [panStart, setPanStart] = useState({ x: 0, y: 0 });
     const stageRef = useRef(null);
     const textareaRefs = useRef({});
     const fileInputRef = useRef(null);
     const containerRef = useRef(null);
+    const [showSelectionHint, setShowSelectionHint] = useState(false);
+    useEffect(() => {
+        if (selectedNodeId || selectedConnectionId) {
+            setShowSelectionHint(true);
+            const timer = setTimeout(() => {
+                setShowSelectionHint(false);
+            }, 2000); // 2秒后自动隐藏
+
+            return () => clearTimeout(timer); // 清除定时器防止内存泄漏
+        } else {
+            setShowSelectionHint(false); // 取消选中时立即隐藏
+        }
+    }, [selectedNodeId, selectedConnectionId]);
 
     // 节点计数器
     const nodeCounter = useRef(1);
@@ -123,6 +143,89 @@ const DecisionFlowTool = ({
             document.removeEventListener('msfullscreenchange', handleFullScreenChange);
         };
     }, []);
+
+    // 画布平移和缩放功能
+    const handleWheel = (e) => {
+        if (e.ctrlKey) {
+            // 缩放
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            const newScale = Math.min(Math.max(0.1, canvasTransform.scale + delta), 3);
+
+            // 计算鼠标位置相对于画布的位置
+            const rect = stageRef.current.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // 计算缩放中心点
+            const scalePointX = (mouseX - canvasTransform.translateX) / canvasTransform.scale;
+            const scalePointY = (mouseY - canvasTransform.translateY) / canvasTransform.scale;
+
+            // 计算新的平移位置以保持缩放中心不变
+            const newTranslateX = mouseX - scalePointX * newScale;
+            const newTranslateY = mouseY - scalePointY * newScale;
+
+            setCanvasTransform({
+                translateX: newTranslateX,
+                translateY: newTranslateY,
+                scale: newScale
+            });
+        } else {
+            // 平移
+            e.preventDefault();
+            setCanvasTransform(prev => ({
+                ...prev,
+                translateX: prev.translateX - e.deltaX,
+                translateY: prev.translateY - e.deltaY
+            }));
+        }
+    };
+
+    const startPanning = (e) => {
+        if (e.button !== 1 && e.button !== 2) return; // 只响应中键或右键
+        e.preventDefault();
+        setIsPanning(true);
+        setPanStart({
+            x: e.clientX - canvasTransform.translateX,
+            y: e.clientY - canvasTransform.translateY
+        });
+    };
+
+    const doPanning = (e) => {
+        if (!isPanning) return;
+        e.preventDefault();
+        setCanvasTransform({
+            ...canvasTransform,
+            translateX: e.clientX - panStart.x,
+            translateY: e.clientY - panStart.y
+        });
+    };
+
+    const stopPanning = () => {
+        setIsPanning(false);
+    };
+
+    const resetView = () => {
+        setCanvasTransform({
+            translateX: 0,
+            translateY: 0,
+            scale: 1
+        });
+    };
+
+    const zoomIn = () => {
+        setCanvasTransform(prev => ({
+            ...prev,
+            scale: Math.min(prev.scale + 0.1, 3)
+        }));
+    };
+
+    const zoomOut = () => {
+        setCanvasTransform(prev => ({
+            ...prev,
+            scale: Math.max(prev.scale - 0.1, 0.1)
+        }));
+    };
 
     // 保存数据
     const saveData = () => {
@@ -243,22 +346,22 @@ const DecisionFlowTool = ({
 
     // 创建新节点
     const addNode = (e) => {
-        if (readOnly) return; // 只读模式下禁止添加节点
         // 点击节点时不要创建新节点
-        if (e.target !== stageRef.current) return;
+        if (readOnly || selectedTool !== 'text') return;
+        // 如果点击的是节点元素，则不创建新节点
+        if (e.target.closest('.node-text-display') || e.target.closest('textarea')) {
+            return;
+        }
 
         // 如果当前有选中节点或连线，点击画布空白处取消选中
         if (selectedNodeId || selectedConnectionId) {
             setSelectedNodeId(null);
             setSelectedConnectionId(null);
-            return;
+
         }
-
-        if (selectedTool !== 'text') return;
-
         const rect = stageRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x = (e.clientX - rect.left - canvasTransform.translateX) / canvasTransform.scale;
+        const y = (e.clientY - rect.top - canvasTransform.translateY) / canvasTransform.scale;
 
         // 创建新节点
         const nodeId = `node-${nodeCounter.current}`;
@@ -360,15 +463,20 @@ const DecisionFlowTool = ({
     const endConnection = (e) => {
         if (!connectingStart || selectedTool !== 'arrow') return;
 
-        if (hoveredAnchor && hoveredAnchor.nodeId !== connectingStart.nodeId) {
+        const rect = stageRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const foundAnchor = findAnchorAtPosition(x, y);
+
+        if (foundAnchor && foundAnchor.nodeId !== connectingStart.nodeId) {
             const newConnection = {
                 id: `conn-${Date.now()}`,
                 from: connectingStart,
-                to: { nodeId: hoveredAnchor.nodeId, anchorPosition: hoveredAnchor.position },
+                to: { nodeId: foundAnchor.nodeId, anchorPosition: foundAnchor.position },
             };
             setConnections([...connections, newConnection]);
         }
-
         setConnectingStart(null);
         setHoveredAnchor(null);
     };
@@ -379,8 +487,8 @@ const DecisionFlowTool = ({
         // 允许在select和arrow工具下拖拽
         if (selectedTool !== 'select' && selectedTool !== 'arrow') return;
         const rect = stageRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x = (e.clientX - rect.left - canvasTransform.translateX) / canvasTransform.scale;
+        const y = (e.clientY - rect.top - canvasTransform.translateY) / canvasTransform.scale;
         console.log(e.buttons);
         setNodes(nodes.map(node =>
             node.id === nodeId ? { ...node, x, y } : node
@@ -399,10 +507,22 @@ const DecisionFlowTool = ({
     // 计算锚点位置
     const getAnchorPosition = (node, position) => {
         switch (position) {
-            case 'top': return { x: node.x + node.width / 2, y: node.y };
-            case 'right': return { x: node.x + node.width, y: node.y + node.height / 2 };
-            case 'bottom': return { x: node.x + node.width / 2, y: node.y + node.height };
-            case 'left': return { x: node.x, y: node.y + node.height / 2 };
+            case 'top': return {
+                x: node.x + node.width / 2,
+                y: node.y
+            };
+            case 'right': return {
+                x: node.x + node.width,
+                y: node.y + node.height / 2
+            };
+            case 'bottom': return {
+                x: node.x + node.width / 2,
+                y: node.y + node.height
+            };
+            case 'left': return {
+                x: node.x,
+                y: node.y + node.height / 2
+            };
             default: return { x: node.x, y: node.y };
         }
     };
@@ -421,16 +541,19 @@ const DecisionFlowTool = ({
         }
     }, [activeNodeId]);
 
-    // 查找鼠标位置附近的锚点
+    // 查找鼠标位置附近的锚点 (修改坐标计算以考虑画布变换)
     const findAnchorAtPosition = (x, y) => {
-        const threshold = 10;
+        const threshold = 15 / canvasTransform.scale;
+        const worldX = (x - canvasTransform.translateX) / canvasTransform.scale;
+        const worldY = (y - canvasTransform.translateY) / canvasTransform.scale;
 
         for (const node of nodes) {
             for (const position of ['top', 'right', 'bottom', 'left']) {
                 const anchorPos = getAnchorPosition(node, position);
+
                 const distance = Math.sqrt(
-                    Math.pow(anchorPos.x - x, 2) +
-                    Math.pow(anchorPos.y - y, 2)
+                    Math.pow(anchorPos.x - worldX, 2) +
+                    Math.pow(anchorPos.y - worldY, 2)
                 );
 
                 if (distance < threshold) {
@@ -481,6 +604,19 @@ const DecisionFlowTool = ({
                 e.preventDefault();
                 toggleFullScreen();
             }
+            // 画布控制
+            if (e.key === '0' && e.ctrlKey) {
+                resetView();
+                e.preventDefault();
+            }
+            if (e.key === '+' && e.ctrlKey) {
+                zoomIn();
+                e.preventDefault();
+            }
+            if (e.key === '-' && e.ctrlKey) {
+                zoomOut();
+                e.preventDefault();
+            }
         };
 
         window.addEventListener('keydown', handleKeyDown);
@@ -528,7 +664,7 @@ const DecisionFlowTool = ({
                                 padding: '2px 6px',
                                 borderRadius: '4px'
                             }}>
-                                全屏模式中 - 按ESC退出
+                                全屏模式中 - 按ESC退出 | 鼠标中键/右键平移 | 滚轮缩放
                             </span>
                         )}
                     </div>
@@ -641,7 +777,7 @@ const DecisionFlowTool = ({
                                     选中节点: <span style={{ fontWeight: 'bold' }}>#{nodes.find(n => n.id === selectedNodeId)?.nodeNumber}</span>
                                 </div>
                                 <button
-                                className='delete-button'
+                                    className='delete-button'
                                     onClick={deleteSelectedNode}
                                 >
                                     <i className="fas fa-trash" style={{ fontSize: '10px' }}></i>
@@ -654,7 +790,7 @@ const DecisionFlowTool = ({
                                 <div style={{ color: '#555', fontSize: '12px' }}>
                                     选中连接
                                 </div>
-                                <button className='delete-button'                                   
+                                <button className='delete-button'
                                     onClick={deleteSelectedConnection}
                                 >
                                     <i className="fas fa-trash" style={{ fontSize: '10px' }}></i>
@@ -665,6 +801,40 @@ const DecisionFlowTool = ({
                     </div>
                 </div>
             )}
+
+            {/* 画布导航控件 */}
+            {!readOnly && (
+                <div className="canvas-controls" style={{
+                    position: 'absolute',
+                    right: '20px',
+                    bottom: '20px',
+                    zIndex: 100,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px'
+                }}>
+                    <button style={getButtonStyle()} onClick={zoomIn}>
+                        <i className="fas fa-search-plus"></i>
+                    </button>
+                    <button style={getButtonStyle()} onClick={zoomOut}>
+                        <i className="fas fa-search-minus"></i>
+                    </button>
+                    <button style={getButtonStyle()} onClick={resetView}>
+                        <i className="fas fa-expand"></i>
+                    </button>
+                    <div style={{
+                        backgroundColor: 'white',
+                        padding: '6px',
+                        borderRadius: '4px',
+                        textAlign: 'center',
+                        fontSize: '12px',
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                    }}>
+                        {Math.round(canvasTransform.scale * 100)}%
+                    </div>
+                </div>
+            )}
+
             {/* 画布 */}
             <div
                 ref={stageRef}
@@ -672,19 +842,22 @@ const DecisionFlowTool = ({
                     flex: 1,
                     border: isFullScreen ? 'none' : '1px solid #ddd',
                     position: 'relative',
-                    overflow: 'auto',
+                    overflow: 'hidden',
                     backgroundColor: isFullScreen ? '#1a1a1a' : '#f9f9f9',
                     backgroundImage: isFullScreen
                         ? 'linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)'
                         : 'linear-gradient(#eee 1px, transparent 1px), linear-gradient(90deg, #eee 1px, transparent 1px)',
-                    backgroundSize: '20px 20px',
-                    cursor: connectingStart ? 'crosshair' : selectedTool === 'text' ? 'text' : 'default',
-                    transition: 'background-color 0.3s',
+                    backgroundSize: `${20 * canvasTransform.scale}px ${20 * canvasTransform.scale}px`,
                     cursor: readOnly ? 'default' : (
-                        connectingStart ? 'crosshair' : selectedTool === 'text' ? 'text' : 'default')
+                        connectingStart ? 'crosshair' : selectedTool === 'text' ? 'text' : isPanning ? 'grabbing' : 'default'),
+                    transition: 'background-color 0.3s',
+                    pointerEvents: 'auto'
                 }}
                 onClick={addNode}
+                onWheel={handleWheel}
+                onMouseDown={startPanning}
                 onMouseMove={(e) => {
+                    doPanning(e);
                     const rect = stageRef.current.getBoundingClientRect();
                     const x = e.clientX - rect.left;
                     const y = e.clientY - rect.top;
@@ -698,231 +871,295 @@ const DecisionFlowTool = ({
                         }
                     }
 
-                    if (connectingStart) {
+                    if (connectingStart && selectedTool === 'arrow') {
                         setConnectingStart(prev => ({ ...prev, currentX: x, currentY: y }));
                         const foundAnchor = findAnchorAtPosition(x, y);
                         setHoveredAnchor(foundAnchor);
                     }
                 }}
                 onMouseUp={(e) => {
+                    stopPanning();
                     setDraggingNodeId(null);
                     if (connectingStart) {
                         endConnection(e);
                     }
                 }}
+                onMouseLeave={stopPanning}
+                onContextMenu={(e) => e.preventDefault()}
             >
-                {/* 通知消息 */}
-                {notification && (
-                    <div className='notification' style={{   
-                        backgroundColor: notification.type === 'error' ? '#e74c3c' :
-                            notification.type === 'info' ? '#3498db' : '#2ecc71',                    
-                    }}>
-                        {notification.type === 'error' && <i className="fas fa-exclamation-circle"></i>}
-                        {notification.type === 'info' && <i className="fas fa-info-circle"></i>}
-                        {notification.type === 'success' && <i className="fas fa-check-circle"></i>}
-                        {notification.message}
-                    </div>
-                )}
 
-                {/* 操作提示 */}
-                {(selectedNodeId || selectedConnectionId) && (
-                    <div className='selection-hint'>
-                        <i className="fas fa-exclamation-triangle"></i>
-                        {selectedNodeId ?
-                            `已选中节点 #${nodes.find(n => n.id === selectedNodeId)?.nodeNumber}，按Delete键或点击工具栏删除按钮可删除` :
-                            '已选中连接，按Delete键或点击工具栏删除按钮可删除'}
-                    </div>
-                )}
+                {/* 画布内容容器 (应用变换) */}
+                <div style={{
+                    transform: `translate(${canvasTransform.translateX}px, ${canvasTransform.translateY}px) scale(${canvasTransform.scale})`,
+                    transformOrigin: '0 0',
+                    width: '100%',
+                    height: '100%',
+                    position: 'relative'
+                }}>
+                    {/* 通知消息 */}
+                    {notification && (
+                        <div className='notification' style={{
+                            backgroundColor: notification.type === 'error' ? '#e74c3c' :
+                                notification.type === 'info' ? '#3498db' : '#2ecc71',
+                        }}>
+                            {notification.type === 'error' && <i className="fas fa-exclamation-circle"></i>}
+                            {notification.type === 'info' && <i className="fas fa-info-circle"></i>}
+                            {notification.type === 'success' && <i className="fas fa-check-circle"></i>}
+                            {notification.message}
+                        </div>
+                    )}
 
-                {/* 箭头标记定义 */}
-                <svg style={{ height: 0, width: 0 }}>
-                    <defs>
-                        <marker
-                            id="arrowhead"
-                            markerWidth="10"
-                            markerHeight="7"
-                            refX="9"
-                            refY="3.5"
-                            orient="auto"
+                    {/* 操作提示 */}
+                    {(showSelectionHint && (selectedNodeId || selectedConnectionId)) && (
+                        <div className='selection-hint'>
+                            <i className="fas fa-exclamation-triangle"></i>
+                            {selectedNodeId ?
+                                `已选中节点 #${nodes.find(n => n.id === selectedNodeId)?.nodeNumber}，按Delete键或点击工具栏删除按钮可删除` :
+                                '已选中连接，按Delete键或点击工具栏删除按钮可删除'}
+                        </div>
+                    )}
+
+                    {/* 箭头标记定义 */}
+                    <svg style={{ height: 0, width: 0 }}>
+                        <defs>
+                            <marker
+                                id="arrowhead"
+                                markerWidth="10"
+                                markerHeight="7"
+                                refX="9"
+                                refY="3.5"
+                                orient="auto"
+                            >
+                                <polygon points="0 0, 10 3.5, 0 7" fill={isFullScreen ? "#fff" : "#333"} />
+                            </marker>
+                        </defs>
+                    </svg>
+
+                    {/* 渲染节点 */}
+                    {nodes.map(node => (
+                        <div
+                            key={node.id}
+                            style={{
+                                cursor: readOnly ? 'default' : (
+                                    selectedTool === 'select' || selectedTool === 'arrow' ? 'move' : 'default'),
+                                position: 'absolute',
+                                left: `${node.x}px`,
+                                top: `${node.y}px`,
+                                width: `${node.width}px`,
+                                minHeight: `${node.height}px`,
+                                border: selectedNodeId === node.id
+                                    ? '3px solid #e74c3c'
+                                    : activeNodeId === node.id
+                                        ? '2px solid #4a90e2'
+                                        : isFullScreen ? '1px solid #555' : '1px solid #bbb',
+                                borderRadius: '8px',
+                                padding: '12px',
+                                backgroundColor: isFullScreen ? '#2a2a2a' : '#ffffff',
+                                boxShadow: selectedNodeId === node.id
+                                    ? '0 0 15px rgba(231, 76, 60, 0.4)'
+                                    : activeNodeId === node.id
+                                        ? '0 0 10px rgba(74, 144, 226, 0.3)'
+                                        : '0 3px 8px rgba(0,0,0,0.1)',
+                                cursor: selectedTool === 'select' || selectedTool === 'arrow' ? 'move' : 'default',
+                                zIndex: (selectedNodeId === node.id || activeNodeId === node.id) ? 100 : 1,
+                                transition: 'all 0.3s',
+                                ':hover': {
+                                    boxShadow: '0 5px 15px rgba(0,0,0,0.15)',
+                                    borderColor: selectedNodeId === node.id
+                                        ? '#e74c3c'
+                                        : activeNodeId === node.id
+                                            ? '#4a90e2'
+                                            : isFullScreen ? '#777' : '#999'
+                                }
+                            }}
+                            onMouseDown={(e) => {
+                                if (readOnly) return; // 只读模式下禁止交互
+                                // 编辑状态下阻止拖拽
+                                if (activeNodeId === node.id) {
+                                    return;
+                                }
+                                setDragStartPos({ x: e.clientX, y: e.clientY });
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setDraggingNodeId(node.id);
+                                setSelectedNodeId(node.id);
+                                setSelectedConnectionId(null);
+                            }}
+                            onDoubleClick={(e) => {
+                                if (readOnly) return; // 只读模式下禁止交互
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setActiveNodeId(node.id);
+                                setSelectedNodeId(null);
+                                setSelectedConnectionId(null);
+                            }}
                         >
-                            <polygon points="0 0, 10 3.5, 0 7" fill={isFullScreen ? "#fff" : "#333"} />
-                        </marker>
-                    </defs>
-                </svg>
+                            {/* 文本编辑区域 */}
+                            {activeNodeId === node.id ? (
+                                <textarea
+                                    ref={(el) => {
+                                        textareaRefs.current[node.id] = el;
+                                        if (el && activeNodeId === node.id) {
+                                            // 立即尝试聚焦
+                                            requestAnimationFrame(() => {
+                                                el.focus();
+                                                const length = el.value.length;
+                                                el.setSelectionRange(length, length);
+                                            });
+                                        }
+                                    }}
+                                    value={node.text}
+                                    onChange={(e) => updateNodeText(node.id, e.target.value)}
+                                    onBlur={() => setActiveNodeId(null)}
+                                    className='node-textarea'
+                                    style={{
+                                        color: isFullScreen ? '#fff' : '#000'
+                                    }}
+                                    readOnly={readOnly}
+                                    autoFocus
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                />
+                            ) : (
+                                <div
+                                    className='node-text-display'
+                                    style={{
+                                        color: isFullScreen ? '#fff' : '#000'
+                                    }}
+                                >
+                                    {node.text}
+                                </div>
+                            )}
 
-                {/* 渲染节点 */}
-                {nodes.map(node => (
-                    <div
-                        key={node.id}
-                        style={{
-                            cursor: readOnly ? 'default' : (
-                                selectedTool === 'select' || selectedTool === 'arrow' ? 'move' : 'default'),
-                            position: 'absolute',
-                            left: `${node.x}px`,
-                            top: `${node.y}px`,
-                            width: `${node.width}px`,
-                            minHeight: `${node.height}px`,
-                            border: selectedNodeId === node.id
-                                ? '3px solid #e74c3c'
-                                : activeNodeId === node.id
-                                    ? '2px solid #4a90e2'
-                                    : isFullScreen ? '1px solid #555' : '1px solid #bbb',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            backgroundColor: isFullScreen ? '#2a2a2a' : '#ffffff',
-                            boxShadow: selectedNodeId === node.id
-                                ? '0 0 15px rgba(231, 76, 60, 0.4)'
-                                : activeNodeId === node.id
-                                    ? '0 0 10px rgba(74, 144, 226, 0.3)'
-                                    : '0 3px 8px rgba(0,0,0,0.1)',
-                            cursor: selectedTool === 'select' || selectedTool === 'arrow' ? 'move' : 'default',
-                            zIndex: (selectedNodeId === node.id || activeNodeId === node.id) ? 100 : 1,
-                            transition: 'all 0.3s',
-                            ':hover': {
-                                boxShadow: '0 5px 15px rgba(0,0,0,0.15)',
-                                borderColor: selectedNodeId === node.id
+                            {/* 节点序号标签 */}
+                            <div className='node-number' style={{
+                                backgroundColor: selectedNodeId === node.id
                                     ? '#e74c3c'
                                     : activeNodeId === node.id
                                         ? '#4a90e2'
-                                        : isFullScreen ? '#777' : '#999'
-                            }
-                        }}
-                        onMouseDown={(e) => {
-                            if (readOnly) return; // 只读模式下禁止交互
-                            // 编辑状态下阻止拖拽
-                            if (activeNodeId === node.id) {
-                                return;
-                            }
-                            setDragStartPos({ x: e.clientX, y: e.clientY });
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setDraggingNodeId(node.id);
-                            setSelectedNodeId(node.id);
-                            setSelectedConnectionId(null);
-                        }}
-                        onDoubleClick={(e) => {
-                            if (readOnly) return; // 只读模式下禁止交互
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setActiveNodeId(node.id);
-                            setSelectedNodeId(null);
-                            setSelectedConnectionId(null);
-                        }}
-                    >
-                        {/* 文本编辑区域 */}
-                        {activeNodeId === node.id ? (
-                            <textarea
-                                ref={(el) => {
-                                    textareaRefs.current[node.id] = el;
-                                    if (el && activeNodeId === node.id) {
-                                        // 立即尝试聚焦
-                                        requestAnimationFrame(() => {
-                                            el.focus();
-                                            const length = el.value.length;
-                                            el.setSelectionRange(length, length);
-                                        });
-                                    }
-                                }}
-                                value={node.text}
-                                onChange={(e) => updateNodeText(node.id, e.target.value)}
-                                onBlur={() => setActiveNodeId(null)}
-                                className='node-textarea'
-                                style={{                          
-                                    color: isFullScreen ? '#fff' : '#000'
-                                }}
-                                readOnly={readOnly}
-                                autoFocus
-                                onMouseDown={(e) => e.stopPropagation()}
-                            />
-                        ) : (
-                            <div
-                            className='node-text-display'
-                                style={{                                
-                                    color: isFullScreen ? '#fff' : '#000'
+                                        : isFullScreen ? '#555' : '#777',
+
+                            }}>
+                                #{node.nodeNumber}
+                            </div>
+
+                            {/* 锚点 */}
+                            {!readOnly && (selectedTool === 'select' || selectedTool === 'arrow') && (
+                                <>
+                                    {['top', 'right', 'bottom', 'left'].map(position => (
+                                        <div
+                                            key={position}
+                                            style={{
+                                                position: 'absolute',
+                                                width: '12px',
+                                                height: '12px',
+                                                borderRadius: '50%',
+                                                backgroundColor: hoveredAnchor?.nodeId === node.id &&
+                                                    hoveredAnchor?.position === position
+                                                    ? '#ff6b6b' : '#4a90e2',
+                                                cursor: 'crosshair',
+                                                border: '1px solid white',
+                                                boxShadow: '0 0 3px rgba(0,0,0,0.3)',
+                                                transition: 'transform 0.2s',
+                                                ':hover': {
+                                                    transform: 'scale(1.3)'
+                                                },
+                                                ...(position === 'top' && {
+                                                    left: '50%',
+                                                    top: '-6px',
+                                                    transform: 'translateX(-50%)',
+                                                }),
+                                                ...(position === 'right' && {
+                                                    right: '-6px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                }),
+                                                ...(position === 'bottom' && {
+                                                    left: '50%',
+                                                    bottom: '-6px',
+                                                    transform: 'translateX(-50%)',
+                                                }),
+                                                ...(position === 'left' && {
+                                                    left: '-6px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                }),
+                                            }}
+                                            onMouseDown={(e) => {
+                                                e.stopPropagation();
+                                                if (selectedTool === 'arrow') {
+                                                    startConnection(node.id, position);
+                                                }
+                                            }}
+                                            onMouseEnter={() => {
+                                                if (selectedTool === 'arrow' && connectingStart) {
+                                                    setHoveredAnchor({ nodeId: node.id, position });
+                                                }
+                                            }}
+                                        />
+                                    ))}
+                                </>
+                            )}
+                        </div>
+                    ))}
+
+                    {/* 渲染连接线（放在节点后面，确保节点可以点击） */}
+                    {connections.map(conn => {
+                        const fromNode = nodes.find(n => n.id === conn.from.nodeId);
+                        const toNode = nodes.find(n => n.id === conn.to.nodeId);
+
+                        if (!fromNode || !toNode) return null;
+
+                        // 获取原始锚点位置
+                        const fromAnchor = getAnchorPosition(fromNode, conn.from.anchorPosition);
+                        const toAnchor = getAnchorPosition(toNode, conn.to.anchorPosition);
+
+                        // 应用画布变换
+                        const start = {
+                            x: fromAnchor.x * canvasTransform.scale + canvasTransform.translateX,
+                            y: fromAnchor.y * canvasTransform.scale + canvasTransform.translateY
+                        };
+                        const end = {
+                            x: toAnchor.x * canvasTransform.scale + canvasTransform.translateX,
+                            y: toAnchor.y * canvasTransform.scale + canvasTransform.translateY
+                        };
+                        return (
+                            <svg
+                                key={conn.id}
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    pointerEvents: 'none',
+                                    zIndex: 10 // 确保连接线在节点上方
                                 }}
                             >
-                                {node.text}
-                            </div>
-                        )}
+                                <line
+                                    x1={fromAnchor.x}
+                                    y1={fromAnchor.y}
+                                    x2={toAnchor.x}
+                                    y2={toAnchor.y}
+                                    stroke={selectedConnectionId === conn.id ? "#e74c3c" : (hoveredAnchor?.nodeId === conn.to.nodeId &&
+                                        hoveredAnchor?.position === conn.to.anchorPosition) ? "#ff6b6b" :
+                                        (isFullScreen ? "#fff" : "#333")}
+                                    strokeWidth={selectedConnectionId === conn.id ? "4" : "2"}
+                                    markerEnd="url(#arrowhead)"
+                                    onClick={(e) => {
+                                        if (readOnly) return; // 只读模式下禁止选择
+                                        e.stopPropagation();
+                                        setSelectedConnectionId(conn.id);
+                                        setSelectedNodeId(null);
+                                    }}
+                                    style={{ cursor: readOnly ? 'default' : 'pointer', pointerEvents: readOnly ? 'none' : 'visibleStroke' }}
+                                />
+                            </svg>
+                        );
+                    })}
 
-                        {/* 节点序号标签 */}
-                        <div className='node-number' style={{
-                            backgroundColor: selectedNodeId === node.id
-                                ? '#e74c3c'
-                                : activeNodeId === node.id
-                                    ? '#4a90e2'
-                                    : isFullScreen ? '#555' : '#777',
-
-                        }}>
-                            #{node.nodeNumber}
-                        </div>
-
-                        {/* 锚点 */}
-                        {!readOnly && (selectedTool === 'select' || selectedTool === 'arrow') && (
-                            <>
-                                {['top', 'right', 'bottom', 'left'].map(position => (
-                                    <div
-                                        key={position}
-                                        style={{
-                                            position: 'absolute',
-                                            width: '12px',
-                                            height: '12px',
-                                            borderRadius: '50%',
-                                            backgroundColor: hoveredAnchor?.nodeId === node.id &&
-                                                hoveredAnchor?.position === position
-                                                ? '#ff6b6b' : '#4a90e2',
-                                            cursor: 'crosshair',
-                                            border: '1px solid white',
-                                            boxShadow: '0 0 3px rgba(0,0,0,0.3)',
-                                            transition: 'transform 0.2s',
-                                            ':hover': {
-                                                transform: 'scale(1.3)'
-                                            },
-                                            ...(position === 'top' && {
-                                                left: '50%',
-                                                top: '-6px',
-                                                transform: 'translateX(-50%)',
-                                            }),
-                                            ...(position === 'right' && {
-                                                right: '-6px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                            }),
-                                            ...(position === 'bottom' && {
-                                                left: '50%',
-                                                bottom: '-6px',
-                                                transform: 'translateX(-50%)',
-                                            }),
-                                            ...(position === 'left' && {
-                                                left: '-6px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                            }),
-                                        }}
-                                        onMouseDown={(e) => {
-                                            e.stopPropagation();
-                                            startConnection(node.id, position);
-                                        }}
-                                    />
-                                ))}
-                            </>
-                        )}
-                    </div>
-                ))}
-
-                {/* 渲染连接线（放在节点后面，确保节点可以点击） */}
-                {connections.map(conn => {
-                    const fromNode = nodes.find(n => n.id === conn.from.nodeId);
-                    const toNode = nodes.find(n => n.id === conn.to.nodeId);
-
-                    if (!fromNode || !toNode) return null;
-
-                    const start = getAnchorPosition(fromNode, conn.from.anchorPosition);
-                    const end = getAnchorPosition(toNode, conn.to.anchorPosition);
-
-                    return (
+                    {/* 正在创建的连接线 */}
+                    {connectingStart && (
                         <svg
-                            key={conn.id}
                             style={{
                                 position: 'absolute',
                                 top: 0,
@@ -930,88 +1167,57 @@ const DecisionFlowTool = ({
                                 width: '100%',
                                 height: '100%',
                                 pointerEvents: 'none',
-                                zIndex: 10 // 确保连接线在节点上方
+                                zIndex: 20,
                             }}
                         >
                             <line
-                                x1={start.x}
-                                y1={start.y}
-                                x2={end.x}
-                                y2={end.y}
-                                stroke={selectedConnectionId === conn.id ? "#e74c3c" : (isFullScreen ? "#fff" : "#333")}
-                                strokeWidth={selectedConnectionId === conn.id ? "4" : "2"}
+                                x1={getAnchorPosition(
+                                    nodes.find(n => n.id === connectingStart.nodeId),
+                                    connectingStart.anchorPosition
+                                ).x}
+                                y1={getAnchorPosition(
+                                    nodes.find(n => n.id === connectingStart.nodeId),
+                                    connectingStart.anchorPosition
+                                ).y}
+                                x2={(connectingStart.currentX - canvasTransform.translateX) / canvasTransform.scale}
+                                y2={(connectingStart.currentY - canvasTransform.translateY) / canvasTransform.scale}
+                                stroke={isFullScreen ? "#fff" : "#333"}
+                                strokeWidth="2"
                                 markerEnd="url(#arrowhead)"
-                                onClick={(e) => {
-                                    if (readOnly) return; // 只读模式下禁止选择
-                                    e.stopPropagation();
-                                    setSelectedConnectionId(conn.id);
-                                    setSelectedNodeId(null);
-                                }}
-                                style={{ cursor: readOnly ? 'default' : 'pointer', pointerEvents: readOnly ? 'none' : 'visibleStroke' }}
                             />
                         </svg>
-                    );
-                })}
+                    )}
 
-                {/* 正在创建的连接线 */}
-                {connectingStart && (
-                    <svg
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            pointerEvents: 'none',
-                            zIndex: 20,
-                        }}
-                    >
-                        <line
-                            x1={getAnchorPosition(
-                                nodes.find(n => n.id === connectingStart.nodeId),
-                                connectingStart.anchorPosition
-                            ).x}
-                            y1={getAnchorPosition(
-                                nodes.find(n => n.id === connectingStart.nodeId),
-                                connectingStart.anchorPosition
-                            ).y}
-                            x2={connectingStart.currentX || 0}
-                            y2={connectingStart.currentY || 0}
-                            stroke={isFullScreen ? "#fff" : "#333"}
-                            strokeWidth="2"
-                            markerEnd="url(#arrowhead)"
-                        />
-                    </svg>
-                )}
+                    {/* 空状态提示 */}
+                    {nodes.length === 0 && !readOnly && (
+                        <div className='empty-state' style={{
+                            color: isFullScreen ? '#aaa' : '#888',
 
-                {/* 空状态提示 */}
-                {nodes.length === 0 && !readOnly && (
-                    <div className='empty-state' style={{
-                        color: isFullScreen ? '#aaa' : '#888',
-                    }}>
-                        <i className="fas fa-project-diagram" style={{ fontSize: '48px', marginBottom: '20px' }}></i>
-                        <h2>欢迎使用决策流程图工具</h2>
-                        <p style={{ margin: '15px 0', lineHeight: '1.6' }}>
-                            请选择上方的"文本"工具开始创建节点，或使用"箭头"工具连接节点。<br />
-                            您也可以点击"加载"按钮恢复之前保存的工作。
-                        </p>
-                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
-                            <button style={getButtonStyle()} onClick={() => setSelectedTool('text')}>
-                                <i className="fas fa-font"></i> 创建节点
-                            </button>
-                            <button style={getButtonStyle()} onClick={loadLocalData}>
-                                <i className="fas fa-folder-open"></i> 加载数据
-                            </button>
+                        }}>
+                            <i className="fas fa-project-diagram" style={{ fontSize: '48px', marginBottom: '20px' }}></i>
+                            <h2>欢迎使用决策流程图工具</h2>
+                            <p style={{ margin: '15px 0', lineHeight: '1.6' }}>
+                                请选择上方的"文本"工具开始创建节点，或使用"箭头"工具连接节点。<br />
+                                使用鼠标中键/右键平移画布，滚轮缩放画布。<br />
+                                您也可以点击"加载"按钮恢复之前保存的工作。
+                            </p>
+                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
+                                <button style={getButtonStyle()} onClick={() => setSelectedTool('text')}>
+                                    <i className="fas fa-font"></i> 创建节点
+                                </button>
+                                <button style={getButtonStyle()} onClick={loadLocalData}>
+                                    <i className="fas fa-folder-open"></i> 加载数据
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
-
             {/* 页脚信息 */}
             {!isFullScreen && !readOnly && (
                 <div className='footer'>
                     <div>
-                        提示：选中节点或连线后按Delete键可删除 | Ctrl+Z撤销删除操作 | Esc取消选择 | F11全屏
+                        提示：选中节点或连线后按Delete键可删除 | Ctrl+Z撤销删除操作 | Esc取消选择 | F11全屏 | 鼠标中键/右键平移 | 滚轮缩放 | Ctrl+0重置视图 | Ctrl+/-缩放
                     </div>
                     <div className='footer-copyright'>
                         决策流程图工具 v1.5 &copy; {new Date().getFullYear()}

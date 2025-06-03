@@ -91,6 +91,8 @@ line {
     background-color: transparent;
     cursor: text;
     line-height: 1.5;
+    position: relative;
+    z-index: 20; /* 高于调整手柄 */
 }
 
 /* 节点文本显示区域 */
@@ -101,6 +103,8 @@ line {
     user-select: none;
     font-size: 12px;
     line-height: 1.5;
+    position: relative;
+    z-index: 20; /* 高于调整手柄 */
 }
 
 .notification {
@@ -244,4 +248,77 @@ line {
         opacity: 0;
         transform: translateY(-20px);
     }
+}
+
+/* 文本框四边的拖拽手柄 */
+.resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #4a90e2;
+  border: 1px solid white;
+  border-radius: 2px;
+  z-index: 10;
+}
+
+.resize-handle-top {
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: n-resize;
+}
+
+.resize-handle-right {
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: e-resize;
+}
+
+.resize-handle-bottom {
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: s-resize;
+}
+
+.resize-handle-left {
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: w-resize;
+}
+
+.resize-handle-top-left {
+  top: -4px;
+  left: -4px;
+  cursor: nw-resize;
+}
+
+.resize-handle-top-right {
+  top: -4px;
+  right: -4px;
+  cursor: ne-resize;
+}
+
+.resize-handle-bottom-right {
+  bottom: -4px;
+  right: -4px;
+  cursor: se-resize;
+}
+
+.resize-handle-bottom-left {
+  bottom: -4px;
+  left: -4px;
+  cursor: sw-resize;
+}
+
+/* 文本框悬停状态 */
+.node-container:hover .resize-handle {
+  display: block;
+}
+
+.node-container {
+  position: absolute;
+  box-sizing: border-box;
 }

@@ -31,6 +31,11 @@ const DecisionFlowTool = React.forwardRef(({
     const fileInputRef = useRef(null);
     const containerRef = useRef(null);
     const [showSelectionHint, setShowSelectionHint] = useState(false);
+    const [resizingNodeId, setResizingNodeId] = useState(null);
+    const [resizeDirection, setResizeDirection] = useState(null);
+    const [resizeStartPos, setResizeStartPos] = useState({ x: 0, y: 0 });
+    const [resizeStartSize, setResizeStartSize] = useState({ width: 0, height: 0 });
+
     useEffect(() => {
         if (selectedNodeId || selectedConnectionId) {
             setShowSelectionHint(true);
@@ -78,6 +83,107 @@ const DecisionFlowTool = React.forwardRef(({
             nodeCounter.current = maxNodeNumber + 1;
         }
     }, [initialNodes]); // 依赖 initialNodes
+
+    // 处理开始调整大小
+    const handleStartResize = (nodeId, direction, e) => {
+        e.stopPropagation();
+        setResizingNodeId(nodeId);
+        setResizeDirection(direction);
+        setResizeStartPos({ x: e.clientX, y: e.clientY });
+
+        const node = nodes.find(n => n.id === nodeId);
+        if (node) {
+            setResizeStartSize({ width: node.width, height: node.height });
+        }
+    };
+
+    // 处理调整大小过程
+    const handleResize = (e) => {
+        if (!resizingNodeId) return;
+
+        const deltaX = e.clientX - resizeStartPos.x;
+        const deltaY = e.clientY - resizeStartPos.y;
+
+        setNodes(nodes.map(node => {
+            if (node.id !== resizingNodeId) return node;
+
+            const newWidth = resizeStartSize.width;
+            const newHeight = resizeStartSize.height;
+            let newX = node.x;
+            let newY = node.y;
+
+            // 根据调整方向计算新尺寸和位置
+            switch (resizeDirection) {
+                case 'top':
+                    newY = node.y + deltaY;
+                    return { ...node, y: newY, height: Math.max(40, resizeStartSize.height - deltaY) };
+                case 'right':
+                    return { ...node, width: Math.max(100, resizeStartSize.width + deltaX) };
+                case 'bottom':
+                    return { ...node, height: Math.max(40, resizeStartSize.height + deltaY) };
+                case 'left':
+                    newX = node.x + deltaX;
+                    return { ...node, x: newX, width: Math.max(100, resizeStartSize.width - deltaX) };
+                case 'top-left':
+                    newX = node.x + deltaX;
+                    newY = node.y + deltaY;
+                    return {
+                        ...node,
+                        x: newX,
+                        y: newY,
+                        width: Math.max(100, resizeStartSize.width - deltaX),
+                        height: Math.max(40, resizeStartSize.height - deltaY)
+                    };
+                case 'top-right':
+                    newY = node.y + deltaY;
+                    return {
+                        ...node,
+                        y: newY,
+                        width: Math.max(100, resizeStartSize.width + deltaX),
+                        height: Math.max(40, resizeStartSize.height - deltaY)
+                    };
+                case 'bottom-right':
+                    return {
+                        ...node,
+                        width: Math.max(100, resizeStartSize.width + deltaX),
+                        height: Math.max(40, resizeStartSize.height + deltaY)
+                    };
+                case 'bottom-left':
+                    newX = node.x + deltaX;
+                    return {
+                        ...node,
+                        x: newX,
+                        width: Math.max(100, resizeStartSize.width - deltaX),
+                        height: Math.max(40, resizeStartSize.height + deltaY)
+                    };
+                default:
+                    return node;
+            }
+        }));
+    };
+
+    // 结束调整大小
+    const handleEndResize = () => {
+        setResizingNodeId(null);
+        setResizeDirection(null);
+    };
+
+    // 在useEffect中添加事件监听
+    useEffect(() => {
+        const handleMouseMove = (e) => handleResize(e);
+        const handleMouseUp = () => handleEndResize();
+
+        if (resizingNodeId) {
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+        }
+
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [resizingNodeId, resizeDirection, resizeStartPos, resizeStartSize]);
+
 
     // 在DecisionFlowTool组件中添加这个方法
     const setCanvasTransformTool = (transform) => {
@@ -459,7 +565,6 @@ const DecisionFlowTool = React.forwardRef(({
             });
         } else {
             // 平移
-            e.preventDefault();
             setCanvasTransform(prev => ({
                 ...prev,
                 translateX: prev.translateX - e.deltaX,
@@ -782,6 +887,30 @@ const DecisionFlowTool = React.forwardRef(({
         ));
     };
 
+    // 自动调整高度函数
+    const autoAdjustHeight = (nodeId, text) => {
+        requestAnimationFrame(() => {
+            const textarea = textareaRefs.current[nodeId];
+            if (!textarea) return;
+
+            // 保存当前滚动位置
+            const scrollTop = textarea.scrollTop;
+
+            // 临时显示文本以计算高度
+            textarea.style.height = 'auto';
+            const newHeight = Math.max(60, textarea.scrollHeight);
+
+            // 使用状态更新而非直接DOM操作
+            setNodes(nodes.map(node =>
+                node.id === nodeId ? { ...node, height: newHeight } : node
+            ));
+
+            // 恢复滚动位置
+            requestAnimationFrame(() => {
+                textarea.scrollTop = scrollTop;
+            });
+        });
+    };
     // 更新节点文本
     const updateNodeText = (nodeId, newText) => {
         if (readOnly) return; // 只读模式下禁止编辑文本
@@ -793,24 +922,30 @@ const DecisionFlowTool = React.forwardRef(({
 
     // 计算锚点位置
     const getAnchorPosition = (node, position) => {
+        const offset = 5; // 外移距离
         switch (position) {
-            case 'top': return {
-                x: node.x + node.width / 2,
-                y: node.y
-            };
-            case 'right': return {
-                x: node.x + node.width,
-                y: node.y + node.height / 2
-            };
-            case 'bottom': return {
-                x: node.x + node.width / 2,
-                y: node.y + node.height
-            };
-            case 'left': return {
-                x: node.x,
-                y: node.y + node.height / 2
-            };
-            default: return { x: node.x, y: node.y };
+            case 'top':
+                return {
+                    x: node.x + node.width / 2,
+                    y: node.y - offset  // 上锚点外移
+                };
+            case 'right':
+                return {
+                    x: node.x + node.width + offset,  // 右锚点外移
+                    y: node.y + node.height / 2
+                };
+            case 'bottom':
+                return {
+                    x: node.x + node.width / 2,
+                    y: node.y + node.height + offset  // 下锚点外移
+                };
+            case 'left':
+                return {
+                    x: node.x - offset,  // 左锚点外移
+                    y: node.y + node.height / 2
+                };
+            default:
+                return { x: node.x, y: node.y };
         }
     };
 
@@ -1226,6 +1361,7 @@ const DecisionFlowTool = React.forwardRef(({
                     {nodes.map(node => (
                         <div
                             key={node.id}
+                            className="node-container"
                             style={{
                                 cursor: readOnly ? 'default' : (
                                     selectedTool === 'select' || selectedTool === 'arrow' ? 'move' : 'default'),
@@ -1247,7 +1383,6 @@ const DecisionFlowTool = React.forwardRef(({
                                     : activeNodeId === node.id
                                         ? '0 0 10px rgba(74, 144, 226, 0.3)'
                                         : '0 3px 8px rgba(0,0,0,0.1)',
-                                cursor: selectedTool === 'select' || selectedTool === 'arrow' ? 'move' : 'default',
                                 zIndex: (selectedNodeId === node.id || activeNodeId === node.id) ? 100 : 1,
                                 transition: 'all 0.3s',
                                 ':hover': {
@@ -1288,16 +1423,17 @@ const DecisionFlowTool = React.forwardRef(({
                                         textareaRefs.current[node.id] = el;
                                         if (el && activeNodeId === node.id) {
                                             // 立即尝试聚焦
-                                            requestAnimationFrame(() => {
-                                                el.focus();
-                                                const length = el.value.length;
-                                                el.setSelectionRange(length, length);
-                                            });
+                                            el.focus();
+                                            const length = el.value.length;
+                                            el.setSelectionRange(length, length);
                                         }
                                     }}
                                     value={node.text}
                                     onChange={(e) => updateNodeText(node.id, e.target.value)}
-                                    onBlur={() => setActiveNodeId(null)}
+                                    onBlur={(e) => {
+                                        setActiveNodeId(null);
+                                        autoAdjustHeight(node.id, e.target.value);
+                                    }}
                                     className='node-textarea'
                                     style={{
                                         color: isFullScreen ? '#fff' : '#000'
@@ -1330,7 +1466,7 @@ const DecisionFlowTool = React.forwardRef(({
                             </div>
 
                             {/* 锚点 */}
-                            {!readOnly && (selectedTool === 'select' || selectedTool === 'arrow') && (
+                            {!readOnly && selectedTool === 'arrow' && (
                                 <>
                                     {['top', 'right', 'bottom', 'left'].map(position => (
                                         <div
@@ -1384,6 +1520,44 @@ const DecisionFlowTool = React.forwardRef(({
                                             }}
                                         />
                                     ))}
+                                </>
+                            )}
+
+                            {/* 调整大小的手柄 */}
+                            {!readOnly && selectedTool === 'select' && (
+                                <>
+                                    <div
+                                        className="resize-handle resize-handle-top"
+                                        onMouseDown={(e) => handleStartResize(node.id, 'top', e)}
+                                    />
+                                    <div
+                                        className="resize-handle resize-handle-right"
+                                        onMouseDown={(e) => handleStartResize(node.id, 'right', e)}
+                                    />
+                                    <div
+                                        className="resize-handle resize-handle-bottom"
+                                        onMouseDown={(e) => handleStartResize(node.id, 'bottom', e)}
+                                    />
+                                    <div
+                                        className="resize-handle resize-handle-left"
+                                        onMouseDown={(e) => handleStartResize(node.id, 'left', e)}
+                                    />
+                                    <div
+                                        className="resize-handle resize-handle-top-left"
+                                        onMouseDown={(e) => handleStartResize(node.id, 'top-left', e)}
+                                    />
+                                    <div
+                                        className="resize-handle resize-handle-top-right"
+                                        onMouseDown={(e) => handleStartResize(node.id, 'top-right', e)}
+                                    />
+                                    <div
+                                        className="resize-handle resize-handle-bottom-right"
+                                        onMouseDown={(e) => handleStartResize(node.id, 'bottom-right', e)}
+                                    />
+                                    <div
+                                        className="resize-handle resize-handle-bottom-left"
+                                        onMouseDown={(e) => handleStartResize(node.id, 'bottom-left', e)}
+                                    />
                                 </>
                             )}
                         </div>

@@ -163,23 +163,37 @@ const DecisionFlowTool = React.forwardRef(({
         return false;
     };
 
-    // 两条线段相交检测
-    const linesIntersect = (x1, y1, x2, y2, x3, y3, x4, y4) => {
-        // 实现线段相交检测算法
-        const denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
-        if (denom === 0) return false; // 平行
+    // 智能计算箭头旋转角度
+    const calculateSmartArrowRotation = (points, anchorPosition, isStraightLine) => {
+        // 如果是直线路径，根据最后一段的自然方向计算角度
+        if (isStraightLine) {
+            if (points.length < 2) return "0";
+            const lastSegment = points[points.length - 2];
+            const targetPoint = points[points.length - 1];
 
-        const ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
-        const ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
+            const dx = targetPoint.x - lastSegment.x;
+            const dy = targetPoint.y - lastSegment.y;
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            return angle.toString();
+        }
 
-        return ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1;
+        // 如果是折线路径，根据锚点位置确定方向
+        switch (anchorPosition) {
+            case 'top': return "90";    // 箭头向下
+            case 'right': return "180";   // 箭头向左
+            case 'bottom': return "-90";   // 箭头向上
+            case 'left': return "0";     // 箭头向右
+            default: return "0";
+        }
     };
 
     // 计算绕过节点的路径
-    const calculatePath = (start, end, nodes, excludeIds = []) => {
+    const calculatePath = (start, end, nodes, excludeIds = [], targetAnchorPosition) => {
+        const directPath = { points: [start, end], intersects: false, isStraightLine: true };
+
         // 1. 检查直接路径是否可行
         if (!doesPathIntersectNode(start, end, nodes, excludeIds)) {
-            return { points: [start, end], intersects: false };
+            return directPath;
         }
 
         // 2. 找出所有障碍节点
@@ -289,10 +303,66 @@ const DecisionFlowTool = React.forwardRef(({
             }
         });
 
+        // 在返回路径前，调整最后一段的方向以匹配锚点方向
+        if (bestPath && bestPath.length > 1) {
+            const lastSegment = bestPath[bestPath.length - 2];
+            const targetPoint = bestPath[bestPath.length - 1];
+
+            switch (targetAnchorPosition) {
+                case 'top':
+                case 'bottom':
+                    // 垂直方向锚点 - 确保最后一段是垂直的
+                    lastSegment.x = targetPoint.x;
+                    break;
+                case 'left':
+                case 'right':
+                    // 水平方向锚点 - 确保最后一段是水平的
+                    lastSegment.y = targetPoint.y;
+                    break;
+            }
+        }
         // 如果找到有效路径则返回，否则返回直接路径
         return bestPath
-            ? { points: bestPath, intersects: true }
-            : { points: [start, end], intersects: false };
+            ? {
+                points: adjustLastSegment(bestPath, targetAnchorPosition),
+                intersects: true,
+                isStraightLine: false
+            }
+            : directPath;
+    };
+
+    // 生成路径数据，确保最后一段与锚点方向对齐
+    const generatePathData = (points) => {
+        if (points.length < 2) return '';
+
+        let path = `M ${points[0].x} ${points[0].y}`;
+
+        for (let i = 1; i < points.length; i++) {
+            path += ` L ${points[i].x} ${points[i].y}`;
+        }
+
+        return path;
+    };
+
+    // 调整最后一段路径以匹配锚点方向
+    const adjustLastSegment = (points, anchorPosition) => {
+        if (points.length < 2) return points;
+
+        const lastPoint = points[points.length - 1];
+        const prevPoint = points[points.length - 2];
+
+        switch (anchorPosition) {
+            case 'left':
+            case 'right':
+                prevPoint.y = lastPoint.y; // 水平对齐
+                break;
+            case 'top':
+            case 'bottom':
+                prevPoint.x = lastPoint.x; // 垂直对齐
+                break;
+        }
+
+        return points;
     };
 
     // 显示通知
@@ -1335,8 +1405,13 @@ const DecisionFlowTool = React.forwardRef(({
                             fromAnchor,
                             toAnchor,
                             nodes,
-                            [conn.from.nodeId, conn.to.nodeId]
+                            [conn.from.nodeId, conn.to.nodeId],
+                            conn.to.anchorPosition
                         );
+                        // 计算箭头旋转角度
+                        const arrowRotation = calculateSmartArrowRotation(path.points,
+                            conn.to.anchorPosition,
+                            path.isStraightLine);
                         return (
                             <svg
                                 key={conn.id}
@@ -1350,16 +1425,27 @@ const DecisionFlowTool = React.forwardRef(({
                                     zIndex: 10 // 确保连接线在节点上方
                                 }}
                             >
+                                <defs>
+                                    <marker
+                                        id={`arrowhead-${conn.id}`}
+                                        markerWidth="10"
+                                        markerHeight="7"
+                                        refX="9"
+                                        refY="3.5"
+                                        orient={arrowRotation}
+                                    >
+                                        <polygon points="0 0, 10 3.5, 0 7" fill={isFullScreen ? "#fff" : "#333"} />
+                                    </marker>
+                                </defs>
                                 <path
-                                    d={`M ${path.points[0].x} ${path.points[0].y} 
-            ${path.points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
+                                    d={generatePathData(path.points)}
                                     stroke={selectedConnectionId === conn.id ? "#e74c3c" :
                                         (hoveredAnchor?.nodeId === conn.to.nodeId &&
                                             hoveredAnchor?.position === conn.to.anchorPosition) ? "#ff6b6b" :
                                             (isFullScreen ? "#fff" : "#333")}
                                     strokeWidth={selectedConnectionId === conn.id ? "4" : "2"}
                                     fill="none"
-                                    markerEnd="url(#arrowhead)"
+                                    markerEnd={`url(#arrowhead-${conn.id})`}
                                     onClick={(e) => {
                                         if (readOnly) return;
                                         e.stopPropagation();
@@ -1368,7 +1454,6 @@ const DecisionFlowTool = React.forwardRef(({
                                     }}
                                     style={{ cursor: readOnly ? 'default' : 'pointer', pointerEvents: readOnly ? 'none' : 'visibleStroke' }}
                                 />
-
                             </svg>
                         );
                     })}

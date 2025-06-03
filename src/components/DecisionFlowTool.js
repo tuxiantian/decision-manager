@@ -95,6 +95,206 @@ const DecisionFlowTool = React.forwardRef(({
         },
         setCanvasTransformTool
     }));
+
+    // 新增函数：检测路径是否穿过其他节点
+    const doesPathIntersectNode = (start, end, nodes, excludeIds = []) => {
+        // 简化的线段与矩形相交检测
+        for (const node of nodes) {
+            if (excludeIds.includes(node.id)) continue;
+
+            // 节点边界
+            const left = node.x;
+            const right = node.x + node.width;
+            const top = node.y;
+            const bottom = node.y + node.height;
+
+            // 线段与矩形相交检测算法
+            if (lineIntersectsRect(start, end, { left, top, right, bottom })) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    // 线段与矩形相交检测算法
+    const lineIntersectsRect = (start, end, rect) => {
+        // 快速排斥实验
+        if (Math.max(start.x, end.x) < rect.left ||
+            Math.min(start.x, end.x) > rect.right ||
+            Math.max(start.y, end.y) < rect.top ||
+            Math.min(start.y, end.y) > rect.bottom) {
+            return false;
+        }
+
+        // 跨立实验
+        const cross = (a, b, c) => {
+            return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+        };
+
+        const p1 = { x: rect.left, y: rect.top };
+        const p2 = { x: rect.right, y: rect.top };
+        const p3 = { x: rect.right, y: rect.bottom };
+        const p4 = { x: rect.left, y: rect.bottom };
+
+        // 检查线段是否与矩形任一边相交
+        if (cross(start, end, p1) * cross(start, end, p2) < 0 &&
+            cross(p1, p2, start) * cross(p1, p2, end) < 0) {
+            return true;
+        }
+        if (cross(start, end, p2) * cross(start, end, p3) < 0 &&
+            cross(p2, p3, start) * cross(p2, p3, end) < 0) {
+            return true;
+        }
+        if (cross(start, end, p3) * cross(start, end, p4) < 0 &&
+            cross(p3, p4, start) * cross(p3, p4, end) < 0) {
+            return true;
+        }
+        if (cross(start, end, p4) * cross(start, end, p1) < 0 &&
+            cross(p4, p1, start) * cross(p4, p1, end) < 0) {
+            return true;
+        }
+
+        // 检查线段是否完全在矩形内部
+        if (start.x > rect.left && start.x < rect.right &&
+            start.y > rect.top && start.y < rect.bottom) {
+            return true;
+        }
+
+        return false;
+    };
+
+    // 两条线段相交检测
+    const linesIntersect = (x1, y1, x2, y2, x3, y3, x4, y4) => {
+        // 实现线段相交检测算法
+        const denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+        if (denom === 0) return false; // 平行
+
+        const ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
+        const ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
+
+        return ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1;
+    };
+
+    // 计算绕过节点的路径
+    const calculatePath = (start, end, nodes, excludeIds = []) => {
+        // 1. 检查直接路径是否可行
+        if (!doesPathIntersectNode(start, end, nodes, excludeIds)) {
+            return { points: [start, end], intersects: false };
+        }
+
+        // 2. 找出所有障碍节点
+        const obstacles = nodes.filter(node =>
+            !excludeIds.includes(node.id) &&
+            lineIntersectsRect(start, end, {
+                left: node.x,
+                top: node.y,
+                right: node.x + node.width,
+                bottom: node.y + node.height
+            })
+        );
+
+        // 3. 如果没有障碍(可能是误检)，返回直接路径
+        if (obstacles.length === 0) {
+            return { points: [start, end], intersects: false };
+        }
+
+        // 4. 对每个障碍物计算绕行路径
+        let bestPath = null;
+        let bestScore = Infinity;
+
+        // 尝试多种绕行策略
+        const strategies = [
+            // 上方绕行
+            () => {
+                const topPoints = [];
+                obstacles.forEach(obstacle => {
+                    topPoints.push({ x: start.x, y: obstacle.y - 10 });
+                    topPoints.push({ x: end.x, y: obstacle.y - 10 });
+                });
+                return [start, ...topPoints, end];
+            },
+            // 下方绕行
+            () => {
+                const bottomPoints = [];
+                obstacles.forEach(obstacle => {
+                    bottomPoints.push({ x: start.x, y: obstacle.y + obstacle.height + 10 });
+                    bottomPoints.push({ x: end.x, y: obstacle.y + obstacle.height + 10 });
+                });
+                return [start, ...bottomPoints, end];
+            },
+            // 左侧绕行
+            () => {
+                const leftPoints = [];
+                obstacles.forEach(obstacle => {
+                    leftPoints.push({ x: obstacle.x - 10, y: start.y });
+                    leftPoints.push({ x: obstacle.x - 10, y: end.y });
+                });
+                return [start, ...leftPoints, end];
+            },
+            // 右侧绕行
+            () => {
+                const rightPoints = [];
+                obstacles.forEach(obstacle => {
+                    rightPoints.push({ x: obstacle.x + obstacle.width + 10, y: start.y });
+                    rightPoints.push({ x: obstacle.x + obstacle.width + 10, y: end.y });
+                });
+                return [start, ...rightPoints, end];
+            },
+            // 组合绕行 (上-右-下)
+            () => {
+                const midY = (start.y + end.y) / 2;
+                const midX = (start.x + end.x) / 2;
+                return [
+                    start,
+                    { x: start.x, y: midY - 20 },
+                    { x: end.x, y: midY - 20 },
+                    end
+                ];
+            },
+            // 组合绕行 (左-下-右)
+            () => {
+                const midY = (start.y + end.y) / 2;
+                const midX = (start.x + end.x) / 2;
+                return [
+                    start,
+                    { x: midX - 20, y: start.y },
+                    { x: midX - 20, y: end.y },
+                    end
+                ];
+            }
+        ];
+
+        // 评估每种绕行策略
+        strategies.forEach(strategy => {
+            const candidatePath = strategy();
+            let valid = true;
+            let pathLength = 0;
+
+            // 检查路径每一段是否有效
+            for (let i = 0; i < candidatePath.length - 1; i++) {
+                if (doesPathIntersectNode(candidatePath[i], candidatePath[i + 1], nodes, excludeIds)) {
+                    valid = false;
+                    break;
+                }
+                pathLength += Math.sqrt(
+                    Math.pow(candidatePath[i + 1].x - candidatePath[i].x, 2) +
+                    Math.pow(candidatePath[i + 1].y - candidatePath[i].y, 2)
+                );
+            }
+
+            // 选择最短的有效路径
+            if (valid && pathLength < bestScore) {
+                bestScore = pathLength;
+                bestPath = candidatePath;
+            }
+        });
+
+        // 如果找到有效路径则返回，否则返回直接路径
+        return bestPath
+            ? { points: bestPath, intersects: true }
+            : { points: [start, end], intersects: false };
+    };
+
     // 显示通知
     const showNotification = (message, type = 'success') => {
         setNotification({ message, type });
@@ -189,6 +389,7 @@ const DecisionFlowTool = React.forwardRef(({
             });
         } else {
             // 平移
+            e.preventDefault();
             setCanvasTransform(prev => ({
                 ...prev,
                 translateX: prev.translateX - e.deltaX,
@@ -1129,15 +1330,13 @@ const DecisionFlowTool = React.forwardRef(({
                         const fromAnchor = getAnchorPosition(fromNode, conn.from.anchorPosition);
                         const toAnchor = getAnchorPosition(toNode, conn.to.anchorPosition);
 
-                        // 应用画布变换
-                        const start = {
-                            x: fromAnchor.x * canvasTransform.scale + canvasTransform.translateX,
-                            y: fromAnchor.y * canvasTransform.scale + canvasTransform.translateY
-                        };
-                        const end = {
-                            x: toAnchor.x * canvasTransform.scale + canvasTransform.translateX,
-                            y: toAnchor.y * canvasTransform.scale + canvasTransform.translateY
-                        };
+                        // 计算路径
+                        const path = calculatePath(
+                            fromAnchor,
+                            toAnchor,
+                            nodes,
+                            [conn.from.nodeId, conn.to.nodeId]
+                        );
                         return (
                             <svg
                                 key={conn.id}
@@ -1151,24 +1350,25 @@ const DecisionFlowTool = React.forwardRef(({
                                     zIndex: 10 // 确保连接线在节点上方
                                 }}
                             >
-                                <line
-                                    x1={fromAnchor.x}
-                                    y1={fromAnchor.y}
-                                    x2={toAnchor.x}
-                                    y2={toAnchor.y}
-                                    stroke={selectedConnectionId === conn.id ? "#e74c3c" : (hoveredAnchor?.nodeId === conn.to.nodeId &&
-                                        hoveredAnchor?.position === conn.to.anchorPosition) ? "#ff6b6b" :
-                                        (isFullScreen ? "#fff" : "#333")}
+                                <path
+                                    d={`M ${path.points[0].x} ${path.points[0].y} 
+            ${path.points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
+                                    stroke={selectedConnectionId === conn.id ? "#e74c3c" :
+                                        (hoveredAnchor?.nodeId === conn.to.nodeId &&
+                                            hoveredAnchor?.position === conn.to.anchorPosition) ? "#ff6b6b" :
+                                            (isFullScreen ? "#fff" : "#333")}
                                     strokeWidth={selectedConnectionId === conn.id ? "4" : "2"}
+                                    fill="none"
                                     markerEnd="url(#arrowhead)"
                                     onClick={(e) => {
-                                        if (readOnly) return; // 只读模式下禁止选择
+                                        if (readOnly) return;
                                         e.stopPropagation();
                                         setSelectedConnectionId(conn.id);
                                         setSelectedNodeId(null);
                                     }}
                                     style={{ cursor: readOnly ? 'default' : 'pointer', pointerEvents: readOnly ? 'none' : 'visibleStroke' }}
                                 />
+
                             </svg>
                         );
                     })}
@@ -1230,22 +1430,24 @@ const DecisionFlowTool = React.forwardRef(({
                 </div>
             </div>
             {/* 页脚信息 */}
-            {!isFullScreen && !readOnly && (
-                <div className='footer'>
-                    <div>
-                        提示：选中节点或连线后按Delete键可删除 | Ctrl+Z撤销删除操作 | Esc取消选择 | F11全屏 | 鼠标中键/右键平移 | 滚轮缩放 | Ctrl+0重置视图 | Ctrl+/-缩放
+            {
+                !isFullScreen && !readOnly && (
+                    <div className='footer'>
+                        <div>
+                            提示：选中节点或连线后按Delete键可删除 | Ctrl+Z撤销删除操作 | Esc取消选择 | F11全屏 | 鼠标中键/右键平移 | 滚轮缩放 | Ctrl+0重置视图 | Ctrl+/-缩放
+                        </div>
+                        <div className='footer-copyright'>
+                            决策流程图工具 v1.5 &copy; {new Date().getFullYear()}
+                        </div>
                     </div>
-                    <div className='footer-copyright'>
-                        决策流程图工具 v1.5 &copy; {new Date().getFullYear()}
-                    </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Font Awesome 图标 */}
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
 
-        </div>
+        </div >
     );
 });
 

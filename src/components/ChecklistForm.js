@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef  , useCallback} from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 import api from './api.js'
@@ -12,7 +12,6 @@ const ChecklistForm = () => {
   const [description, setDescription] = useState('');
   const [questions, setQuestions] = useState([{ question: '', description: '' }]);
   const [activeTab, setActiveTab] = useState('form');
-  const mermaidContainerRef = useRef(null);
   const [flowData, setFlowData] = useState({});
   const navigate = useNavigate();
 
@@ -96,8 +95,7 @@ const ChecklistForm = () => {
         name: checklistName,
         description,
         questions,
-        mermaid_code: JSON.stringify(flowData),
-        user_id: 1,
+        mermaid_code: JSON.stringify(flowData)
       }
       if (checklistId) {
         // 更新模式
@@ -135,16 +133,14 @@ const ChecklistForm = () => {
       </div>
 
       {activeTab === 'flowchart' && (
-        <div className="tab-content">
-          <div className="flowchart-container">
-            <DecisionFlowTool
-              // 传递初始数据
-              initialNodes={flowData.nodes}
-              initialConnections={flowData.connections}
-              // 当流程图数据改变时，更新flowData状态
-              onFlowChange={handleFlowChange}
-            />
-          </div>
+        <div className="flowchart-container">
+          <DecisionFlowTool
+            // 传递初始数据
+            initialNodes={flowData.nodes}
+            initialConnections={flowData.connections}
+            // 当流程图数据改变时，更新flowData状态
+            onFlowChange={handleFlowChange}
+          />
         </div>
       )}
 

@@ -1,7 +1,6 @@
 .checklist-form {
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
-    padding: 20px;
     border: 1px solid #ccc;
     border-radius: 10px;
     background-color: #f9f9f9;
@@ -12,10 +11,13 @@
   border-radius: 8px;
   overflow: hidden;
   margin-top: 20px;
+  height: 100vh;
 }
 
 /* 调整标签页内容样式 */
 .tab-content {
+  max-width: 800px;
+  margin: 0 auto;
   padding: 20px;
   border: 1px solid #ddd;
   border-radius: 0 8px 8px 8px;

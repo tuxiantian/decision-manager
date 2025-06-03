@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useImperativeHandle } from 'react';
 import './DecisionFlowTool.css'
-const DecisionFlowTool = ({
+const DecisionFlowTool = React.forwardRef(({
     initialNodes = [],
     initialConnections = [],
     onFlowChange = () => { },
     readOnly = false  // 添加 readOnly 属性
-}) => {
+}, ref) => {
     const [nodes, setNodes] = useState(initialNodes);
     const [connections, setConnections] = useState(initialConnections);
     const [activeNodeId, setActiveNodeId] = useState(null);
@@ -78,6 +78,23 @@ const DecisionFlowTool = ({
             nodeCounter.current = maxNodeNumber + 1;
         }
     }, [initialNodes]); // 依赖 initialNodes
+
+    // 在DecisionFlowTool组件中添加这个方法
+    const setCanvasTransformTool = (transform) => {
+        setCanvasTransform(transform);
+    };
+
+    // 暴露方法给父组件
+    useImperativeHandle(ref, () => ({
+        resetView: () => {
+            setCanvasTransform({
+                translateX: 0,
+                translateY: 0,
+                scale: 1
+            });
+        },
+        setCanvasTransformTool
+    }));
     // 显示通知
     const showNotification = (message, type = 'success') => {
         setNotification({ message, type });
@@ -172,7 +189,6 @@ const DecisionFlowTool = ({
             });
         } else {
             // 平移
-            e.preventDefault();
             setCanvasTransform(prev => ({
                 ...prev,
                 translateX: prev.translateX - e.deltaX,
@@ -1231,6 +1247,6 @@ const DecisionFlowTool = ({
 
         </div>
     );
-};
+});
 
 export default DecisionFlowTool;

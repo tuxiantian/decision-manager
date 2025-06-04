@@ -26,7 +26,7 @@ const FeedbackAdmin = () => {
 
     const handleResponseSubmit = async (e) => {
         e.preventDefault();
-        await api.post(`/api/admin/feedback/${selectedFeedback.id}/respond`, {'response':response });
+        await api.post(`/api/admin/feedback/${selectedFeedback.id}/respond`, { 'response': response });
         fetchFeedback(currentPage);
         setSelectedFeedback(null);
     };
@@ -43,8 +43,19 @@ const FeedbackAdmin = () => {
         }
     };
 
+    // 获取文件名的函数
+    const getFileNameFromUrl = (url) => {
+        try {
+            const urlObj = new URL(url);
+            const pathParts = urlObj.pathname.split('/');
+            return decodeURIComponent(pathParts[pathParts.length - 1]);
+        } catch {
+            return '附件';
+        }
+    };
+
     return (
-        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
             {/* 添加标题行 */}
             <div style={{
                 display: 'flex',
@@ -56,6 +67,7 @@ const FeedbackAdmin = () => {
             }}>
                 <p style={{ flex: 1 }}>用户ID</p>
                 <p style={{ flex: 4 }}>反馈内容</p>
+                <p style={{ flex: 2 }}>附件</p>
                 <p style={{ flex: 1 }}>联系方式</p>
                 <p style={{ flex: 1 }}>状态</p>
                 <p style={{ flex: 1 }}>操作</p>
@@ -71,6 +83,39 @@ const FeedbackAdmin = () => {
                     }}>
                         <p style={{ flex: 1 }}>{fb.user_id}</p>
                         <p style={{ flex: 4 }}>{fb.description}</p>
+                        {/* 附件列 */}
+                        <div style={{ flex: 2 }}>
+                            {fb.attachments && fb.attachments.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    {fb.attachments.map((url, index) => (
+                                        <a
+                                            key={index}
+                                            href={url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                                padding: '3px 8px',
+                                                backgroundColor: '#e9ecef',
+                                                borderRadius: '4px',
+                                                color: '#007bff',
+                                                textDecoration: 'none',
+                                                fontSize: '0.9em',
+                                                display: 'inline-block',
+                                                maxWidth: '200px',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                whiteSpace: 'nowrap'
+                                            }}
+                                            download
+                                        >
+                                            {getFileNameFromUrl(url)}
+                                        </a>
+                                    ))}
+                                </div>
+                            ) : (
+                                <span style={{ color: '#999' }}>无附件</span>
+                            )}
+                        </div>
                         <p style={{ flex: 1 }}>{fb.contact_info}</p>
                         <p style={{ flex: 1 }}>{fb.status}</p>
                         <div style={{ flex: 1 }}>
@@ -84,9 +129,23 @@ const FeedbackAdmin = () => {
                 ))}
             </ul>
             <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '20px' }}>
-                <button onClick={handlePrevPage} disabled={currentPage === 1} className='green-button'>Previous</button>
+                <button onClick={handlePrevPage} disabled={currentPage === 1} style={{
+                    padding: '5px 15px',
+                    backgroundColor: currentPage === 1 ? '#6c757d' : '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                }}>Previous</button>
                 <p>Page {currentPage} of {totalPages}</p>
-                <button onClick={handleNextPage} disabled={currentPage >= totalPages} className='green-button'>Next</button>
+                <button onClick={handleNextPage} disabled={currentPage >= totalPages} style={{
+                    padding: '5px 15px',
+                    backgroundColor: currentPage >= totalPages ? '#6c757d' : '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer'
+                }}>Next</button>
             </div>
             {selectedFeedback && (
                 <div style={styles.overlay}>
@@ -95,10 +154,43 @@ const FeedbackAdmin = () => {
                         <h3>回复反馈</h3>
                         <form onSubmit={handleResponseSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <p>反馈内容: {selectedFeedback.description}</p>
+                            {/* 在模态框中显示附件 */}
+                            {selectedFeedback.attachments && selectedFeedback.attachments.length > 0 && (
+                                <div>
+                                    <p><strong>附件:</strong></p>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '10px' }}>
+                                        {selectedFeedback.attachments.map((url, index) => (
+                                            <a
+                                                key={index}
+                                                href={url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{
+                                                    padding: '3px 8px',
+                                                    backgroundColor: '#e9ecef',
+                                                    borderRadius: '4px',
+                                                    color: '#007bff',
+                                                    textDecoration: 'none',
+                                                    fontSize: '0.9em'
+                                                }}
+                                                download
+                                            >
+                                                {getFileNameFromUrl(url)}
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             <textarea
-                                style={{ height: '100px' }}
+                                style={{
+                                    height: '100px',
+                                    padding: '10px',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '4px'
+                                }}
                                 value={response}
                                 onChange={(e) => setResponse(e.target.value)}
+                                placeholder="请输入回复内容..."
                             />
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
                                 <button className='green-button'>提交回复</button>

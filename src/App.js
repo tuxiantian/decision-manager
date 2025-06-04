@@ -18,6 +18,7 @@ import Ahp from './components/Ahp';
 import BalancedDecision from './components/BalancedDecision';
 import ChecklistDecision from './components/ChecklistDecision';
 import InspirationManagement from './components/InspirationManagement';
+import UserManagement from './components/UserManagement';
 import api from './components/api'; 
 
 function App() {
@@ -71,6 +72,7 @@ function App() {
           <Link className="my-nav-link" to="/logic-errors">逻辑错误</Link>
           <Link className="my-nav-link" to="/ahp">AHP分析</Link>
           <Link className="my-nav-link" to="/inspirations">启发管理</Link>
+          <Link className="my-nav-link" to="/user-management">用户管理</Link>
           <Link className="my-nav-link" to="/feedback">用户反馈管理</Link>
 
           {username ? (
@@ -100,6 +102,7 @@ function App() {
           <Route path="/logic-errors" element={<LogicErrorList />} />
           <Route path="/feedback" element={<FeedbackAdmin />} />
           <Route path="/inspirations" element={<InspirationManagement />} />
+          <Route path="/user-management" element={<UserManagement />} />
           <Route path="/ahp" element={<Ahp />} />
           <Route path="/balanced-decisions" element={<BalancedDecision />} />
           <Route path="/decisions" element={<ChecklistDecision />} />

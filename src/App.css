@@ -292,43 +292,6 @@ li {
   width: 800px;
   margin: 20px auto;
 }
-.go-to-list-button {
-  position: fixed; /* 固定位置 */
-  right: 130px;     /* 距离页面右边30像素 */
-  bottom: 50%;     /* 距离页面底部50%，即在页面中间 */
-  width: 50px;     /* 按钮宽度 */
-  height: 50px;    /* 按钮高度 */
-  background-color: #28a745; /* 按钮的绿色背景 */
-  color: white;    /* 箭头符号的颜色 */
-  border: none;    /* 去掉边框 */
-  border-radius: 50%; /* 圆形按钮 */
-  cursor: pointer; /* 鼠标悬停时的光标样式 */
-  font-size: 24px; /* 箭头符号的字体大小 */
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* 添加一些阴影让按钮更具视觉效果 */
-  z-index: 1000;   /* 确保按钮位于页面内容之上 */
-  transition: background-color 0.3s ease; /* 鼠标悬停时的背景变色效果 */
-}
-
-.scroll-to-top-button {
-  position: fixed; /* 固定位置 */
-  right: 130px;     /* 距离页面右边30像素 */
-  bottom: 40%;     /* 距离页面底部50%，即在页面中间 */
-  width: 50px;     /* 按钮宽度 */
-  height: 50px;    /* 按钮高度 */
-  background-color: #28a745; /* 按钮的绿色背景 */
-  color: white;    /* 箭头符号的颜色 */
-  border: none;    /* 去掉边框 */
-  border-radius: 50%; /* 圆形按钮 */
-  cursor: pointer; /* 鼠标悬停时的光标样式 */
-  font-size: 24px; /* 箭头符号的字体大小 */
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3); /* 添加一些阴影让按钮更具视觉效果 */
-  z-index: 1000;   /* 确保按钮位于页面内容之上 */
-  transition: background-color 0.3s ease; /* 鼠标悬停时的背景变色效果 */
-}
-
-.scroll-to-top-button:hover {
-  background-color: #218838; /* 鼠标悬停时按钮变暗 */
-}
 
 
 .tab-button {

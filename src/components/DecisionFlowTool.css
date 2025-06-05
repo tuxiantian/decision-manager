@@ -32,7 +32,6 @@ line {
 
 /* 工具栏 */
 .toolbar-main {
-    padding: 6px;
     background-color: #f0f0f0;
     display: flex;
     gap: 8px;
@@ -43,7 +42,7 @@ line {
 
 /* 按钮基础样式 */
 .tool-button {
-    padding: 6px 12px;
+    padding: 6px 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
     cursor: pointer;

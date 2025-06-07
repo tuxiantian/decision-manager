@@ -154,10 +154,6 @@
     opacity: 0.8;
   }
   
-  .tabs-container {
-    margin-bottom: 20px;
-  }
-  
   .tabs {
     display: flex;
     justify-content: space-around;

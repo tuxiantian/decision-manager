@@ -146,13 +146,64 @@
 /* 在CSS文件中添加 */
 .search-container .input-group-text:hover {
     background-color: #f0f0f0;
-  }
-  
-  .bi-x-lg {
+}
+
+.bi-x-lg {
     font-size: 0.9rem;
     color: #6c757d;
-  }
-  
-  .bi-x-lg:hover {
+}
+
+.bi-x-lg:hover {
     color: #212529;
-  }
+}
+
+/* 修改预览层样式，确保在最上层 */
+.image-preview-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 2000;
+    /* 提高到比卡片更高的层级 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-preview-container {
+    max-width: 90%;
+    max-height: 90%;
+    position: relative;
+}
+
+.image-preview-container img {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.image-preview-tooltip {
+    position: absolute;
+    bottom: -30px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: white;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .image-preview-container {
+        max-width: 95%;
+        max-height: 95%;
+    }
+
+    .image-preview-tooltip {
+        display: none;
+    }
+}

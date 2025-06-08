@@ -25,6 +25,8 @@ export default function InspirationManagement() {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchType, setSearchType] = useState('all'); // 'all', 'text', 'image'
 
+    const [hoveredImage, setHoveredImage] = useState(null);
+
     // 获取所有启发内容（带分页和搜索）
     const fetchInspirations = async () => {
         try {
@@ -393,6 +395,16 @@ export default function InspirationManagement() {
                 </InputGroup>
             </div>
 
+            {/* 图片预览层 */}
+            {hoveredImage && (
+                <div className="image-preview-overlay" onClick={() => setHoveredImage(null)}>
+                    <div className="image-preview-container">
+                        <img src={hoveredImage} alt="预览大图" />
+                        <div className="image-preview-tooltip">点击任意位置关闭</div>
+                    </div>
+                </div>
+            )}
+
             <Table striped bordered hover responsive>
                 <thead>
                     <tr>
@@ -408,7 +420,7 @@ export default function InspirationManagement() {
                             <td>{item.type === 'text' ? '文字' : '图片'}</td>
                             <td className="content-cell">
                                 {item.type === 'image' ? (
-                                    <img src={item.content} alt="启发图片" className="thumbnail" />
+                                    <img src={item.content} onClick={() => setHoveredImage(item.content)} alt="启发图片" className="thumbnail" />
                                 ) : (
                                     item.content
                                 )}

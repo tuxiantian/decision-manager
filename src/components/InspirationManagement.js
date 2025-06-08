@@ -389,7 +389,11 @@ export default function InspirationManagement() {
                         </InputGroup.Text>
                     )}
                     {/* 搜索按钮 */}
-                    <Button variant="outline-secondary" onClick={handleSearch}>
+                    <Button style={{
+                        backgroundColor: '#4CAF50',
+                        borderColor: '#4CAF50',
+                        color: 'white'
+                    }} onClick={handleSearch}>
                         搜索
                     </Button>
                 </InputGroup>

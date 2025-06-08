@@ -397,8 +397,8 @@ export default function InspirationManagement() {
                     <tr>
                         <th width="10%">类型</th>
                         <th width="60%">内容</th>
-                        <th width="20%">创建时间</th>
-                        <th width="10%">操作</th>
+                        <th width="15%">创建时间</th>
+                        <th width="15%">操作</th>
                     </tr>
                 </thead>
                 <tbody>

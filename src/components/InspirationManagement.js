@@ -133,6 +133,7 @@ export default function InspirationManagement() {
         try {
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('type', 'inspiration');
 
             const response = await api.post('/upload', formData, {
                 onUploadProgress: (progressEvent) => {

@@ -4,10 +4,7 @@
   }
 /* 增加流程图容器样式 */
 .flowchart-container {
-  border: 1px solid #ddd;
-  border-radius: 8px;
   overflow: hidden;
-  margin-top: 20px;
   height: 100%;
 }
 

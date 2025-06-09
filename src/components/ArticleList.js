@@ -77,6 +77,7 @@ const ArticleList = () => {
     };
 
     const handleClearSearch = () => {
+        console.log('Clearing search term'); 
         setSearchTerm('');
         setCurrentPage(1);
         fetchArticles(1);
@@ -163,7 +164,7 @@ const ArticleList = () => {
                             onClick={handleClearSearch}
                             style={{
                                 position: 'absolute',
-                                right: '10px',
+                                right: '26px',
                                 top: '50%',
                                 transform: 'translateY(-50%)',
                                 cursor: 'pointer',

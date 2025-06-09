@@ -8,7 +8,7 @@
 }
 
 /* 确保SVG背景元素可以穿透点击 */
-svg {
+.decision-flow-container svg {
     pointer-events: none;
 }
 

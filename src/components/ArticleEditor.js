@@ -200,8 +200,8 @@ const ArticleEditor = () => {
                   }}
             />
             {errors.content && <p style={{ color: 'red' }}>{errors.content}</p>}
-            <button onClick={handleSave}  className='green-button' style={{marginTop:'10px'}}>Save Article</button>
-            <button onClick={goBack}  className='green-button' style={{marginTop:'10px'}}>Go Back</button>
+            <button onClick={handleSave}  className='green-button' style={{margin:'10px 10px'}}>Save Article</button>
+            <button onClick={goBack}  className='green-button' style={{margin:'10px 10px'}}>Go Back</button>
         </div>
     );
 };

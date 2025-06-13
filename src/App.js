@@ -1,7 +1,7 @@
 import logo from './logo.svg';
 import './App.css';
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Routes,Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import LoginPage from './LoginPage';
 import RegisterPage from './RegisterPage';
 import Home from './Home';
@@ -19,11 +19,13 @@ import BalancedDecision from './components/BalancedDecision';
 import ChecklistDecision from './components/ChecklistDecision';
 import InspirationManagement from './components/InspirationManagement';
 import UserManagement from './components/UserManagement';
-import api from './components/api'; 
+import api from './components/api';
 
 function App() {
   const [username, setUsername] = useState(null); // 存储用户名
+  const [activeMenu, setActiveMenu] = useState(null);
   const navigate = useNavigate();
+
 
   useEffect(() => {
     // 检查用户登录状态，获取用户名
@@ -47,67 +49,143 @@ function App() {
     try {
       await api.post('/logout'); // 假设此端点处理退出逻辑
       setUsername(null); // 清除用户名状态
-      localStorage.removeItem('username'); // 清除 localStorage 中的用户名
+      localStorage.removeItem('username'); // 清除 localStorage 中的用户名      
       navigate('/login'); // 跳转到登录页面
     } catch (error) {
       console.log("退出失败", error);
     }
   };
 
+  // 菜单数据结构
+  const menuItems = [
+    {
+      title: '首页',
+      path: '/',
+    },
+    {
+      title: '决策工具',
+      submenu: [
+        { title: '平衡决策', path: '/balanced-decisions' },
+        { title: 'AHP分析', path: '/ahp' },
+        { title: '决策清单', path: '/checklists' },
+        {
+          title: '新建决策清单',
+          path: '/checklist-form'
+        },
+        { title: '决策结果', path: '/decisions' },
+      ],
+    },
+    {
+      title: '内容管理',
+      submenu: [
+        { title: '文章列表', path: '/articles' },
+        { title: '逻辑错误库', path: '/logic-errors' },
+        { title: '启发管理', path: '/inspirations' },
+      ],
+    },
+    {
+      title: '系统管理',
+      submenu: [
+        { title: '用户管理', path: '/user-management' },
+        { title: '反馈管理', path: '/feedback' },
+      ],
+    },
+    {
+      title: username ? `欢迎, ${username}` : '账户',
+      submenu: username
+        ? [
+          { title: '退出登录', action: handleLogout },
+        ]
+        : [
+          { title: '登录', path: '/login' },
+          { title: '注册', path: '/register' },
+        ],
+    },
+  ];
+
+  // 切换二级菜单显示
+  const toggleMenu = (menuTitle) => {
+    setActiveMenu(activeMenu === menuTitle ? null : menuTitle);
+  };
+
+  // 点击菜单项处理
+  const handleMenuItemClick = (item) => {
+    if (item.action) {
+      item.action();
+    } else if (item.path) {
+      navigate(item.path);
+      setActiveMenu(null); // 导航后关闭菜单
+    }
+  };
+
   return (
     <div className="App">
-      <nav style={{
-          marginBottom: '20px',
-          display: 'flex',
-          justifyContent: 'center', // 导航栏项居中对齐
-          backgroundColor: '#333',  // 导航栏背景颜色
-          padding: '10px 0',        // 导航栏内填充
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' // 添加阴影效果
-        }}>
-          <Link className="my-nav-link" to="/">首页</Link>
-          <Link className="my-nav-link" to="/balanced-decisions">平衡决策</Link>
-          <Link className="my-nav-link" to="/articles">文章</Link>
-          <Link className="my-nav-link" to="/checklists">决策清单</Link>
-          <Link className="my-nav-link" to="/decisions">决定</Link>
-          <Link className="my-nav-link" to="/logic-errors">逻辑错误</Link>
-          <Link className="my-nav-link" to="/ahp">AHP分析</Link>
-          <Link className="my-nav-link" to="/inspirations">启发管理</Link>
-          <Link className="my-nav-link" to="/user-management">用户管理</Link>
-          <Link className="my-nav-link" to="/feedback">用户反馈管理</Link>
-
-          {username ? (
+      <nav className="main-nav">
+        <ul className="nav-list">
+          {menuItems.map((item, index) => (
+            <li
+              key={index}
+              className={`nav-item ${item.submenu ? 'has-submenu' : ''}`}
+              onMouseEnter={() => item.submenu && setActiveMenu(item.title)}
+              onMouseLeave={() => item.submenu && activeMenu === item.title && setActiveMenu(null)}
+            >
+              {item.submenu ? (
                 <>
-                  <Link className="my-nav-link" disabled>Welcome, {username}</Link>
-                  <Link className="my-nav-link" onClick={handleLogout}>Logout</Link>
+                  <span
+                    className="nav-link"
+                    onClick={() => toggleMenu(item.title)}
+                  >
+                    {item.title}
+                  </span>
+                  {activeMenu === item.title && (
+                    <ul className="submenu">
+                      {item.submenu.map((subItem, subIndex) => (
+                        <li key={subIndex}>
+                          <span
+                            className="submenu-link"
+                            onClick={() => handleMenuItemClick(subItem)}
+                          >
+                            {subItem.title}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </>
               ) : (
-                <>
-                  <Link className="my-nav-link" as={Link} to="/login">Login</Link>
-                  <Link className="my-nav-link" as={Link} to="/register">Register</Link>
-                </>
+                <Link
+                  className="nav-link"
+                  to={item.path}
+                  onClick={() => setActiveMenu(null)}
+                >
+                  {item.title}
+                </Link>
               )}
-        </nav>
-        <Routes>
-          <Route path="/" element={<StatisticsDashboard />} />
-          <Route path="/login" element={<LoginPage  onLogin={setUsername} />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/articles" element={<ArticleList />} />
-          <Route path="/add-article" element={<ArticleEditor />} />
-          <Route path="/edit-article/:id" element={<ArticleEditor />} />
-          <Route path="/view-article/:id" element={<ArticleViewer />} />
-          <Route path="/checklists" element={<ChecklistList />} />
-          <Route path="/checklist/flowchart/:checklistId" element={<FlowchartDetail />} />
-          <Route path="/checklist-form" element={<ChecklistForm />} />
-          <Route path="/checklist/update/:checklistId" element={<ChecklistForm />} />
-          <Route path="/logic-errors" element={<LogicErrorList />} />
-          <Route path="/feedback" element={<FeedbackAdmin />} />
-          <Route path="/inspirations" element={<InspirationManagement />} />
-          <Route path="/user-management" element={<UserManagement />} />
-          <Route path="/ahp" element={<Ahp />} />
-          <Route path="/balanced-decisions" element={<BalancedDecision />} />
-          <Route path="/decisions" element={<ChecklistDecision />} />
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <Routes>
+        <Route path="/" element={<StatisticsDashboard />} />
+        <Route path="/login" element={<LoginPage onLogin={setUsername} />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/articles" element={<ArticleList />} />
+        <Route path="/add-article" element={<ArticleEditor />} />
+        <Route path="/edit-article/:id" element={<ArticleEditor />} />
+        <Route path="/view-article/:id" element={<ArticleViewer />} />
+        <Route path="/checklists" element={<ChecklistList />} />
+        <Route path="/checklist/flowchart/:checklistId" element={<FlowchartDetail />} />
+        <Route path="/checklist-form" element={<ChecklistForm />} />
+        <Route path="/checklist/update/:checklistId" element={<ChecklistForm />} />
+        <Route path="/logic-errors" element={<LogicErrorList />} />
+        <Route path="/feedback" element={<FeedbackAdmin />} />
+        <Route path="/inspirations" element={<InspirationManagement />} />
+        <Route path="/user-management" element={<UserManagement />} />
+        <Route path="/ahp" element={<Ahp />} />
+        <Route path="/balanced-decisions" element={<BalancedDecision />} />
+        <Route path="/decisions" element={<ChecklistDecision />} />
 
-        </Routes>
+      </Routes>
     </div>
   );
 }

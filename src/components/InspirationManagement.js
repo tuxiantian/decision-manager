@@ -3,8 +3,6 @@ import { Modal, Button, Form, Alert, Table, Tabs, Tab, Pagination, InputGroup, F
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import './InspirationManagement.css';
-
-import { API_BASE_URL } from '../config';
 import api from './api.js'
 
 export default function InspirationManagement() {

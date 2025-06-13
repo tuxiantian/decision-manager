@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 import api from './api.js'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const ChecklistList = () => {
   const [checklists, setChecklists] = useState([]);
@@ -83,9 +85,9 @@ const ChecklistList = () => {
                       <strong>{version.name}</strong> - Version: {version.version} - Clone Count:{version.clone_count}
                       <button
                         onClick={() => handleDeleteChecklist(version.id, false)}
-                        style={{ marginLeft: '10px', backgroundColor: '#f44336', color: 'white', border: 'none', padding: '5px', borderRadius: '4px', cursor: 'pointer' }}
+                        style={{ marginLeft: '10px', background: 'none', border: 'none', padding: '5px', borderRadius: '4px', cursor: 'pointer' }}
                       >
-                        Delete
+                        <FontAwesomeIcon icon={faTrash} style={{ color: '#ff4444', fontSize: '1.2rem' }} />
                       </button>
                     </li>
                   ))}
@@ -99,9 +101,9 @@ const ChecklistList = () => {
               <button onClick={() => handleViewFlowchartClick(checklist.id)} className='green-button'>View Flowchart</button>
               <button
                 onClick={() => handleDeleteChecklist(checklist.id, true)}
-                style={{ backgroundColor: '#f44336', color: 'white', border: 'none', padding: '5px', borderRadius: '4px', cursor: 'pointer' }}
+                style={{ background: 'none', border: 'none', padding: '5px', borderRadius: '4px', cursor: 'pointer' }}
               >
-                Delete Checklist
+                <FontAwesomeIcon icon={faTrash} style={{ color: '#ff4444', fontSize: '1.2rem' }} />
               </button>
             </div>
           </li>

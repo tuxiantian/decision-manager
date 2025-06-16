@@ -199,7 +199,7 @@ const ArticleList = () => {
                                 marginBottom: '5px'
                             }}>
                                 <h3 style={{ margin: 0 }}>{article.title}</h3>
-                                <p style={{ margin: 0 }}>Author: {article.author}</p>
+                                <p style={{ margin: 0 ,textAlign:'left' }}>Author: {article.author}</p>
                             </div>
                             <div style={{
                                 display: 'flex',

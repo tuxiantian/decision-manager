@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import '@toast-ui/editor/dist/toastui-editor-viewer.css';
-import { Viewer } from '@toast-ui/react-editor';
 import { useParams, useNavigate } from 'react-router-dom';
 import MarkdownViewer from './MarkdownViewer';
+import api from './api.js'
 import './ArticleViewer.css';
 import { API_BASE_URL } from '../config';
 import '../App.css';
@@ -14,7 +13,7 @@ const ArticleViewer = () => {
     const [article, setArticle] = useState(null);
 
     useEffect(() => {
-        axios.get(`${API_BASE_URL}/articles/${id}`)
+        api.get(`${API_BASE_URL}/articles/${id}`)
             .then(response => {
                 setArticle(response.data);
             })

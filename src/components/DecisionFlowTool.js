@@ -107,8 +107,6 @@ const DecisionFlowTool = React.forwardRef(({
         setNodes(nodes.map(node => {
             if (node.id !== resizingNodeId) return node;
 
-            const newWidth = resizeStartSize.width;
-            const newHeight = resizeStartSize.height;
             let newX = node.x;
             let newY = node.y;
 

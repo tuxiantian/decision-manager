@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import api from './api.js'
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Editor } from '@toast-ui/react-editor';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -19,7 +19,7 @@ const ArticleEditor = () => {
     // useEffect 钩子用于在组件加载时获取文章数据
     useEffect(() => {
         if (id) {
-            axios.get(`${API_BASE_URL}/articles/${id}`)
+            api.get(`${API_BASE_URL}/articles/${id}`)
                 .then(response => {
                     const { title, content, author, tags, keywords } = response.data;
                     setTitle(title);
@@ -94,7 +94,7 @@ const ArticleEditor = () => {
 
         if (id) {
             // 更新已有文章
-            axios.put(`${API_BASE_URL}/articles/${id}`, newArticle)
+            api.put(`${API_BASE_URL}/articles/${id}`, newArticle)
                 .then(response => {
                     console.log('Article updated:', response.data);
                     navigate('/articles'); // 保存成功后跳转到文章列表
@@ -104,7 +104,7 @@ const ArticleEditor = () => {
                 });
         } else {
             // 创建新文章
-            axios.post(`${API_BASE_URL}/articles`, newArticle)
+            api.post(`${API_BASE_URL}/articles`, newArticle)
                 .then(response => {
                     console.log('Article saved:', response.data);
                     navigate('/articles'); // 保存成功后跳转到文章列表
@@ -122,7 +122,7 @@ const ArticleEditor = () => {
     
         try {
           // 向 Flask 后端发送 POST 请求，将图片上传到 MinIO
-          const response = await axios.post(`${API_BASE_URL}/upload`, formData, {
+          const response = await api.post(`${API_BASE_URL}/upload`, formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },

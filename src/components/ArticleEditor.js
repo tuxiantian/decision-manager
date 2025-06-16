@@ -119,7 +119,7 @@ const ArticleEditor = () => {
         // 创建 FormData 对象，将 blob 作为参数
         const formData = new FormData();
         formData.append('file', blob);
-    
+        formData.append('type','article');
         try {
           // 向 Flask 后端发送 POST 请求，将图片上传到 MinIO
           const response = await api.post(`${API_BASE_URL}/upload`, formData, {

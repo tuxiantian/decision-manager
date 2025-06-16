@@ -150,10 +150,10 @@ const ArticleEditor = () => {
                 />
                 {errors.title && <p style={{ color: 'red' }}>{errors.title}</p>}
             </div>
-            <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', gap: '20px' }}>
                 <input
                     type="text"
-                    maxLength={50}
+                    maxLength={100}
                     placeholder="Author"
                     value={author}
                     onChange={(e) => setAuthor(e.target.value)}
@@ -168,7 +168,7 @@ const ArticleEditor = () => {
                     <input
                         type="text"
                         placeholder="Add a keyword"
-                        maxLength={25}
+                        maxLength={100}
                         value={keywordInput}
                         onChange={(e) => setKeywordInput(e.target.value)}
                         style={{ flex: 1, padding: '10px' }}
@@ -177,11 +177,11 @@ const ArticleEditor = () => {
                 </div>
             </div>
 
-            <div style={{ marginTop: '10px' }}>
+            <div style={{ margin: '6px auto' }}>
                 {keywords.map((keyword, index) => (
                     <div key={index} style={{ display: 'inline-block', marginRight: '10px' }}>
                         <span>{keyword}</span>
-                        <button type="button"  className='red-button' onClick={() => handleRemoveKeyword(index)}>x</button>
+                        <button type="button"  className='small-red-button' onClick={() => handleRemoveKeyword(index)}>x</button>
                     </div>
                 ))}
             </div>

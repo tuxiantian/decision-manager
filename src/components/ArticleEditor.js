@@ -138,7 +138,7 @@ const ArticleEditor = () => {
 
     return (
         <div style={{ width: '80%', margin: '0 auto' }}>
-            <h2>{id ? 'Edit Article' : 'Create Article'}</h2>
+            <h2>{id ? '编辑文章' : '写文章'}</h2>
             <div style={{ marginBottom: '20px' }}>
                 <input
                     type="text"

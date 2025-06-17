@@ -13,7 +13,8 @@ export default function InspirationManagement() {
     const [currentInspiration, setCurrentInspiration] = useState(null);
     const [formData, setFormData] = useState({
         type: 'text',
-        content: ''
+        content: '',
+        description: ''  // 新增的描述字段
     });
 
     // 分页和搜索状态
@@ -102,7 +103,8 @@ export default function InspirationManagement() {
         setCurrentInspiration(null);
         setFormData({
             type: 'text',
-            content: ''
+            content: '',
+            description: ''
         });
         setShowModal(true);
     };
@@ -112,7 +114,8 @@ export default function InspirationManagement() {
         setCurrentInspiration(inspiration);
         setFormData({
             type: inspiration.type,
-            content: inspiration.content
+            content: inspiration.content,
+            description: inspiration.description || ''
         });
         setShowModal(true);
     };
@@ -191,7 +194,7 @@ export default function InspirationManagement() {
                                 className="mb-2"
                             />
                             <small className="text-muted">
-                                支持 JPG, PNG, GIF 格式，最大 5MB
+                                支持 JPG, PNG, GIF 格式，最大 10MB
                             </small>
                         </>
                     )}
@@ -219,6 +222,17 @@ export default function InspirationManagement() {
             return (
                 <>
                     {renderImageInput()}
+                    {/* 新增图片描述输入框 */}
+                    <Form.Control
+                        as="textarea"
+                        rows={2}
+                        name="description"
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        required={formData.type === 'image'}
+                        className="mb-3 mt-3"
+                        placeholder="请输入图片的一句话描述..."
+                    />
                     {formData.content && (
                         <div className="image-preview">
                             <div className="text-muted small mb-2">图片预览：</div>
@@ -422,7 +436,10 @@ export default function InspirationManagement() {
                             <td>{item.type === 'text' ? '文字' : '图片'}</td>
                             <td className="content-cell">
                                 {item.type === 'image' ? (
-                                    <img src={item.content} onClick={() => setHoveredImage(item.content)} alt="启发图片" className="thumbnail" />
+                                    <>
+                                        <img src={item.content} onClick={() => setHoveredImage(item.content)} alt="启发图片" className="thumbnail" />
+                                        {item.description && <div className="text-muted small mt-1">{item.description}</div>}
+                                    </>
                                 ) : (
                                     item.content
                                 )}

@@ -23,11 +23,23 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+.content-cell .text-muted {
+    white-space: normal; /* 允许描述文字换行 */
+    word-break: break-word; /* 长单词换行 */
+    max-width: 300px;
+}
 
+/* 修改响应式调整 */
+@media (max-width: 768px) {
+    .content-cell .text-muted {
+        max-width: 150px;
+    }
+}
 .thumbnail {
     max-width: 100px;
     max-height: 60px;
     object-fit: cover;
+    margin-bottom: 5px;
 }
 
 .image-preview img {

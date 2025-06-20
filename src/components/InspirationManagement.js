@@ -436,10 +436,23 @@ export default function InspirationManagement() {
                             <td>{item.type === 'text' ? '文字' : '图片'}</td>
                             <td className="content-cell">
                                 {item.type === 'image' ? (
-                                    <>
-                                        <img src={item.content} onClick={() => setHoveredImage(item.content)} alt="启发图片" className="thumbnail" />
-                                        {item.description && <div className="text-muted small mt-1">{item.description}</div>}
-                                    </>
+                                    <div className="image-with-description">
+                                        {/* 图片部分（左侧） */}
+                                        <div className="image-container">
+                                            <img
+                                                src={item.content}
+                                                onClick={() => setHoveredImage(item.content)}
+                                                alt="启发图片"
+                                                className="thumbnail"
+                                            />
+                                        </div>
+                                        {/* 描述部分（右侧） */}
+                                        {item.description && (
+                                            <div className="description-container">
+                                                <div className="text-muted small">{item.description}</div>
+                                            </div>
+                                        )}
+                                    </div>
                                 ) : (
                                     item.content
                                 )}

@@ -1,0 +1,30 @@
+/* Tab container styles */
+.tab-container {
+  display: flex;
+  border-bottom: 2px solid #ccc;
+  margin-bottom: 10px;
+}
+
+/* Tab button styles */
+.tab-button {
+  flex: 1;
+  padding: 5px 20px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: bold;
+  border: none;
+  background-color: #f9f9f9;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Active tab styles */
+.tab-button.active {
+  color: #ffffff;
+  background-color: #007bff;
+  border-bottom: 2px solid #007bff;
+}
+
+/* Hover effect */
+.tab-button:hover {
+  background-color: #e0e0e0;
+}

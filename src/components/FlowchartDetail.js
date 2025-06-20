@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 import api from './api.js'
 import DecisionFlowTool from './DecisionFlowTool'; // 引入新的流程图组件
@@ -13,6 +13,8 @@ const FlowchartDetail = () => {
   const flowchartToolRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isReady, setIsReady] = useState(false);
+  const location = useLocation();
+  const { isPlatform } = location.state || {};
 
   // 计算并居中所有节点的视图
   const centerView = useCallback(() => {
@@ -67,7 +69,10 @@ const FlowchartDetail = () => {
     // 获取清单详情，包括流程图代码
     const fetchChecklist = async () => {
       try {
-        const response = await api.get(`${API_BASE_URL}/platform_checklists/${checklistId}`);
+          const endpoint = isPlatform
+          ? `${API_BASE_URL}/platform_checklists/${checklistId}`
+          : `${API_BASE_URL}/checklists/${checklistId}`;
+        const response = await api.get(endpoint);
         setChecklist(response.data);
         // 尝试解析存储的流程图数据
         if (response.data.mermaid_code) {
@@ -84,7 +89,7 @@ const FlowchartDetail = () => {
     };
 
     fetchChecklist();
-  }, [checklistId]);
+  }, [checklistId, isPlatform]);
 
   // 数据加载完成后自动居中视图
   useEffect(() => {

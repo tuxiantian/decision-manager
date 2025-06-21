@@ -13,6 +13,8 @@ const FlowchartDetail = () => {
   const flowchartToolRef = useRef(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isReady, setIsReady] = useState(false);
+  const [hasFlowchart, setHasFlowchart] = useState(false); // 新增状态
+
   const location = useLocation();
   const { isPlatform } = location.state || {};
 
@@ -69,9 +71,9 @@ const FlowchartDetail = () => {
     // 获取清单详情，包括流程图代码
     const fetchChecklist = async () => {
       try {
-          const endpoint = isPlatform
-          ? `${API_BASE_URL}/platform_checklists/${checklistId}`
-          : `${API_BASE_URL}/checklists/${checklistId}`;
+        const endpoint = isPlatform
+          ? `/platform_checklists/${checklistId}`
+          : `/checklists/${checklistId}`;
         const response = await api.get(endpoint);
         setChecklist(response.data);
         // 尝试解析存储的流程图数据
@@ -79,12 +81,18 @@ const FlowchartDetail = () => {
           try {
             const parsedData = JSON.parse(response.data.mermaid_code);
             setFlowData(parsedData);
+            setHasFlowchart(parsedData.nodes && parsedData.nodes.length > 0);
+
           } catch (e) {
             console.error('Failed to parse flow data', e);
+            setHasFlowchart(false);
+
           }
         }
       } catch (error) {
         console.error('Error fetching checklist:', error);
+        setHasFlowchart(false);
+
       }
     };
 
@@ -93,13 +101,14 @@ const FlowchartDetail = () => {
 
   // 数据加载完成后自动居中视图
   useEffect(() => {
-    if (flowData.nodes.length > 0) {
+    if (flowData.nodes?.length > 0) {
       centerView();
+    } else {
+      setIsLoading(false);
     }
   }, [flowData, centerView]);
 
   const handleDownload = async () => {
-    console.log(1);
     if (!isReady || !flowchartRef.current) {
       alert("请等待流程图加载完成");
       return;
@@ -168,9 +177,10 @@ const FlowchartDetail = () => {
         </button>
         <button
           onClick={centerView}
+          disabled={!isReady}
           style={{
             padding: '10px 15px',
-            background: '#17a2b8',
+            background: isReady ? '#17a2b8' : '#6c757d',
             color: 'white',
             border: 'none',
             borderRadius: '5px',
@@ -200,7 +210,7 @@ const FlowchartDetail = () => {
         </Link>
       </div>
 
-      {isLoading && (
+      {isLoading && hasFlowchart && (
         <div style={{ textAlign: 'center', padding: '10px', color: '#6c757d' }}>
           正在调整视图以显示完整流程图...
         </div>

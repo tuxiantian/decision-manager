@@ -65,16 +65,21 @@ function App() {
       path: '/',
     },
     {
-      title: '决策工具',
+      title: '图表',
       submenu: [
         { title: '平衡决策', path: '/balanced-decisions' },
         { title: 'AHP分析', path: '/ahp' },
+        { title: '决策结果', path: '/decisions' },
+      ],
+    },
+    {
+      title: '决策工具',
+      submenu: [        
         { title: '决策清单', path: '/checklists' },
         {
           title: '新建决策清单',
           path: '/checklist-form'
-        },
-        { title: '决策结果', path: '/decisions' },
+        }
       ],
     },
     {

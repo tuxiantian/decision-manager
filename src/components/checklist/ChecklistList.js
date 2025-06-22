@@ -127,10 +127,109 @@ const ChecklistList = () => {
     setCurrentPage(1); // 切换标签时重置页码
   };
 
+  // 渲染用户检查清单项（简单列表）
+  const renderUserChecklistItem = (checklist) => (
+    <li key={checklist.id} className="checklist-item">
+      <div className="checklist-info">
+        <strong>{checklist.name}</strong>
+        <div>{checklist.description}</div>
+        <div>Version: {checklist.version}</div>
+      </div>
+      <div className="checklist-actions">
+        <button onClick={() => handleReviewClick(checklist)} className="icon-button">
+          <div className="icon-tooltip">
+            <svg className="icon" aria-hidden="true">
+              <use xlinkHref="#icon-shenhe"></use>
+            </svg>
+            <span className="tooltip-text">审核</span>
+          </div>
+        </button>
+        <button onClick={() => handleViewFlowchartClick(checklist.id, false)} className="icon-button">
+          <div className="icon-tooltip">
+            <svg className="icon" aria-hidden="true">
+              <use xlinkHref="#icon-liuchengtu"></use>
+            </svg>
+            <span className="tooltip-text">流程图</span>
+          </div>
+        </button>
+      </div>
+    </li>
+  );
+
+    // 渲染平台检查清单项（包含版本树）
+  const renderPlatformChecklistItem = (checklist) => (
+    <li key={checklist.id} className="checklist-item">
+      <div className="checklist-info">
+        <strong>{checklist.name}</strong>
+        <div>{checklist.description}</div>
+        <div>Version: {checklist.version} | Clone Count: {checklist.clone_count}</div>
+        
+        {checklist.versions && checklist.versions.length > 0 && (
+          <ul className="version-list">
+            {checklist.versions.map(version => (
+              <li key={version.id} className="version-item">
+                <div>
+                  <strong>{version.name}</strong>
+                  <div>Version: {version.version} | Clone Count: {version.clone_count}</div>
+                </div>
+                <div className="version-actions">
+                  <button onClick={() => handleDeleteChecklist(version.id, false)} className="icon-button">
+                    <div className="icon-tooltip">
+                      <svg className="icon" aria-hidden="true">
+                        <use xlinkHref="#icon-shanchu"></use>
+                      </svg>
+                      <span className="tooltip-text">删除</span>
+                    </div>
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className="checklist-actions">
+        {checklist.can_update && (
+          <button onClick={() => handleUpdateClick(checklist.id)} className="icon-button">
+            <div className="icon-tooltip">
+              <svg className="icon" aria-hidden="true">
+                <use xlinkHref="#icon-gengxinbanben"></use>
+              </svg>
+              <span className="tooltip-text">更新版本</span>
+            </div>
+          </button>
+        )}
+        <button onClick={() => handleEditClick(checklist.id)} className="icon-button">
+          <div className="icon-tooltip">
+            <svg className="icon" aria-hidden="true">
+              <use xlinkHref="#icon-bianji"></use>
+            </svg>
+            <span className="tooltip-text">编辑</span>
+          </div>
+        </button>
+        <button onClick={() => handleViewFlowchartClick(checklist.id, true)} className="icon-button">
+          <div className="icon-tooltip">
+            <svg className="icon" aria-hidden="true">
+              <use xlinkHref="#icon-liuchengtu"></use>
+            </svg>
+            <span className="tooltip-text">流程图</span>
+          </div>
+        </button>
+        <button onClick={() => handleDeleteChecklist(checklist.id, true)} className="icon-button">
+          <div className="icon-tooltip">
+            <svg className="icon" aria-hidden="true">
+              <use xlinkHref="#icon-shanchu"></use>
+            </svg>
+            <span className="tooltip-text">删除</span>
+          </div>
+        </button>
+      </div>
+    </li>
+  );
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div className="checklist-container">
       {/* Tab Navigation */}
-      <div className="tab-container" style={{ width: '600px' }}>
+      <div className="tab-container">
         <button
           className={`tab-button ${tab === 'user' ? 'active' : ''}`}
           onClick={() => handleTabChange('user')}
@@ -145,104 +244,13 @@ const ChecklistList = () => {
         </button>
       </div>
 
-      <ul style={{ listStyle: 'none', padding: 0, width: '80%' }}>
-        {(tab === 'user' ? userChecklists : checklists).map(checklist => (
-          <li key={checklist.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', borderBottom: '1px solid #ccc' }}>
-            <div style={{ textAlign: 'left', maxWidth: '600px' }}>
-              <strong>{checklist.name}</strong> - Version: {checklist.version} - Clone Count:{checklist.clone_count}
-              <div>{checklist.description}</div>
-              {checklist.versions && checklist.versions.length > 0 && (
-                <ul style={{ marginLeft: '20px', listStyle: 'circle' }}>
-                  {checklist.versions.map(version => (
-                    <li key={version.id} style={{ marginBottom: '5px' }}>
-                      <strong>{version.name}</strong> - Version: {version.version} - Clone Count:{version.clone_count}
-                      <button
-                        onClick={() => handleDeleteChecklist(version.id, false)}
-                        className='icon-button'
-                      >
-                        <div className="icon-tooltip">
-                          <svg className="icon" aria-hidden="true">
-                            <use xlinkHref="#icon-shanchu"></use>
-                          </svg>
-                          <span className="tooltip-text">删除</span>
-
-                        </div>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              {tab === 'platform' && checklist.can_update && (
-                <button onClick={() => handleUpdateClick(checklist.id)} className='icon-button'>
-                  <div className="icon-tooltip">
-                    <svg className="icon" aria-hidden="true">
-                      <use xlinkHref="#icon-gengxinbanben"></use>
-                    </svg>
-                    <span className="tooltip-text">更新版本</span>
-                  </div>
-                </button>
-              )}
-              {tab === 'platform' && (
-                <>
-                    <button onClick={() => handleEditClick(checklist.id, false)} className='icon-button'>
-                    <div className="icon-tooltip">
-                      <svg className="icon" aria-hidden="true">
-                        <use xlinkHref="#icon-bianji"></use>
-                      </svg>
-                      <span className="tooltip-text">编辑</span>
-                    </div>
-                  </button>
-                  <button onClick={() => handleViewFlowchartClick(checklist.id, true)} className='icon-button'>
-                    <div className="icon-tooltip">
-                      <svg className="icon" aria-hidden="true" aria-label='流程图' title="流程图">
-                        <use xlinkHref="#icon-liuchengtu"></use>
-                      </svg>
-                      <span className="tooltip-text">流程图</span>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => handleDeleteChecklist(checklist.id, true)}
-                    className='icon-button'
-                  >
-                    <div className="icon-tooltip">
-                      <svg className="icon" aria-hidden="true">
-                        <use xlinkHref="#icon-shanchu"></use>
-                      </svg>
-                      <span className="tooltip-text">删除</span>
-
-                    </div>
-                  </button></>
-              )}
-
-              {tab === 'user' && (
-                <>
-                  <button
-                    onClick={() => handleReviewClick(checklist)}
-                    className='icon-button'
-                  >
-                    <div className="icon-tooltip">
-                      <svg className="icon" aria-hidden="true" aria-label='审核' title="审核">
-                        <use xlinkHref="#icon-shenhe"></use>
-                      </svg>
-                      <span className="tooltip-text">审核</span>
-                    </div>
-                  </button>
-                  <button onClick={() => handleViewFlowchartClick(checklist.id, false)} className='icon-button'>
-                    <div className="icon-tooltip">
-                      <svg className="icon" aria-hidden="true" aria-label='流程图' title="流程图">
-                        <use xlinkHref="#icon-liuchengtu"></use>
-                      </svg>
-                      <span className="tooltip-text">流程图</span>
-                    </div>
-                  </button>
-                </>
-              )}
-            </div>
-          </li>
-        ))}
+       {/* 清单列表 */}
+      <ul className="checklist-list">
+        {tab === 'user' 
+          ? userChecklists.map(renderUserChecklistItem)
+          : checklists.map(renderPlatformChecklistItem)}
       </ul>
+
       {/* Review Modal */}
       <Modal show={showReviewModal} onHide={() => setShowReviewModal(false)}>
         <Modal.Header closeButton>

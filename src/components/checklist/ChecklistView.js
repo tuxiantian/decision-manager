@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import DecisionFlowTool from './DecisionFlowTool';
 import api from '../api.js'
-
+import './ChecklistView.css';
 
 
 const ChecklistView = () => {

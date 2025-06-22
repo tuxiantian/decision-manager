@@ -19,6 +19,7 @@ import BalancedDecision from './components/BalancedDecision';
 import ChecklistDecision from './components/checklist/ChecklistDecision';
 import InspirationManagement from './components/InspirationManagement';
 import UserManagement from './components/UserManagement';
+import ChecklistEditor from './components/checklist/ChecklistEditor';
 import api from './components/api';
 
 function App() {
@@ -177,6 +178,7 @@ function App() {
         <Route path="/checklist/flowchart/:checklistId" element={<FlowchartDetail />} />
         <Route path="/checklist-form" element={<ChecklistForm />} />
         <Route path="/checklist/update/:checklistId" element={<ChecklistForm />} />
+        <Route path="/checklist/edit/:checklistId" element={<ChecklistEditor />} />
         <Route path="/logic-errors" element={<LogicErrorList />} />
         <Route path="/feedback" element={<FeedbackAdmin />} />
         <Route path="/inspirations" element={<InspirationManagement />} />

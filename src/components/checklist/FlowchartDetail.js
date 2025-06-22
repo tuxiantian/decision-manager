@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
-import api from './api.js'
-import DecisionFlowTool from './DecisionFlowTool'; // 引入新的流程图组件
+import api from '../api.js'
+import DecisionFlowTool from './DecisionFlowTool.js'; // 引入新的流程图组件
 import html2canvas from 'html2canvas'; // 用于将流程图转换为图片
 
 const FlowchartDetail = () => {

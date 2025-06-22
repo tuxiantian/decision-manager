@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
-import api from './api.js'
+import { API_BASE_URL } from '../../config.js';
+import api from '../api.js'
 import './ChecklistList.css';
 import { Modal, Button, Form } from 'react-bootstrap';
 import '//at.alicdn.com/t/c/font_4955755_8r0qvum3c9b.js';

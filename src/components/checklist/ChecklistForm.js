@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
-import api from './api.js'
+import { API_BASE_URL } from '../../config.js';
+import api from '../api.js'
 import './ChecklistForm.css';
-import DecisionFlowTool from './DecisionFlowTool'; // 引入新的流程图组件
+import DecisionFlowTool from './DecisionFlowTool.js'; // 引入新的流程图组件
 import isEqual from 'lodash/isEqual'; 
 
 const ChecklistForm = () => {

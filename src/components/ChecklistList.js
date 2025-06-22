@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 import api from './api.js'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faCheck } from '@fortawesome/free-solid-svg-icons';
 import './ChecklistList.css';
 import { Modal, Button, Form } from 'react-bootstrap';
+import '//at.alicdn.com/t/c/font_4955755_8r0qvum3c9b.js';
 
 const ChecklistList = () => {
   const [tab, setTab] = useState('platform');
@@ -157,9 +156,15 @@ const ChecklistList = () => {
                       <strong>{version.name}</strong> - Version: {version.version} - Clone Count:{version.clone_count}
                       <button
                         onClick={() => handleDeleteChecklist(version.id, false)}
-                        style={{ marginLeft: '10px', background: 'none', border: 'none', padding: '5px', borderRadius: '4px', cursor: 'pointer' }}
+                        className='icon-button'
                       >
-                        <FontAwesomeIcon icon={faTrash} style={{ color: '#ff4444', fontSize: '1.2rem' }} />
+                        <div class="icon-tooltip">
+                          <svg class="icon" aria-hidden="true">
+                            <use xlinkHref="#icon-shanchu"></use>
+                          </svg>
+                          <span class="tooltip-text">删除</span>
+
+                        </div>
                       </button>
                     </li>
                   ))}
@@ -168,28 +173,60 @@ const ChecklistList = () => {
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
               {tab === 'platform' && checklist.can_update && (
-                <button onClick={() => handleUpdateClick(checklist.id)} className='green-button'>Update Version</button>
+                <button onClick={() => handleUpdateClick(checklist.id)} className='icon-button'>
+                  <div class="icon-tooltip">
+                    <svg class="icon" aria-hidden="true">
+                      <use xlinkHref="#icon-gengxinbanben"></use>
+                    </svg>
+                    <span class="tooltip-text">更新版本</span>
+                  </div>
+                </button>
               )}
               {tab === 'platform' && (
                 <>
-                  <button onClick={() => handleViewFlowchartClick(checklist.id, true)} className='green-button'>View Flowchart</button>
+                  <button onClick={() => handleViewFlowchartClick(checklist.id, true)} className='icon-button'>
+                    <div class="icon-tooltip">
+                      <svg class="icon" aria-hidden="true" aria-label='流程图' title="流程图">
+                        <use xlinkHref="#icon-liuchengtu"></use>
+                      </svg>
+                      <span class="tooltip-text">流程图</span>
+                    </div>
+                  </button>
                   <button
                     onClick={() => handleDeleteChecklist(checklist.id, true)}
-                    style={{ background: 'none', border: 'none', padding: '5px', borderRadius: '4px', cursor: 'pointer' }}
+                    className='icon-button'
                   >
-                    <FontAwesomeIcon icon={faTrash} style={{ color: '#ff4444', fontSize: '1.2rem' }} />
+                    <div class="icon-tooltip">
+                      <svg class="icon" aria-hidden="true">
+                        <use xlinkHref="#icon-shanchu"></use>
+                      </svg>
+                      <span class="tooltip-text">删除</span>
+
+                    </div>
                   </button></>
               )}
 
               {tab === 'user' && (
                 <>
-                 <button 
-                  onClick={() => handleReviewClick(checklist)}
-                  className='blue-button'
-                >
-                  <FontAwesomeIcon icon={faCheck} /> Review
-                </button>
-                  <button onClick={() => handleViewFlowchartClick(checklist.id, false)} className='green-button'>查看流程图</button>
+                  <button
+                    onClick={() => handleReviewClick(checklist)}
+                    className='icon-button'
+                  >
+                    <div class="icon-tooltip">
+                      <svg class="icon" aria-hidden="true" aria-label='审核' title="审核">
+                        <use xlinkHref="#icon-shenhe"></use>
+                      </svg>
+                      <span class="tooltip-text">审核</span>
+                    </div>
+                  </button>
+                  <button onClick={() => handleViewFlowchartClick(checklist.id, false)} className='icon-button'>
+                    <div class="icon-tooltip">
+                      <svg class="icon" aria-hidden="true" aria-label='流程图' title="流程图">
+                        <use xlinkHref="#icon-liuchengtu"></use>
+                      </svg>
+                      <span class="tooltip-text">流程图</span>
+                    </div>
+                  </button>
                 </>
               )}
             </div>

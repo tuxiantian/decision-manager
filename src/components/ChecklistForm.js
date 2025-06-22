@@ -125,11 +125,6 @@ const ChecklistForm = () => {
   }, [checklistId]);
 
   const hasChanges = useCallback(() => {
-    console.log(JSON.stringify(originalData));
-    console.log(checklistName !== originalData.name ||
-    description !== originalData.description ||
-    
-    !isEqual(flowData, originalData.flowData));
     return (
     checklistName !== originalData.name ||
     description !== originalData.description ||

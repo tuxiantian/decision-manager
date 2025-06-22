@@ -20,6 +20,7 @@ import ChecklistDecision from './components/checklist/ChecklistDecision';
 import InspirationManagement from './components/InspirationManagement';
 import UserManagement from './components/UserManagement';
 import ChecklistEditor from './components/checklist/ChecklistEditor';
+import ChecklistView from './components/checklist/ChecklistView';
 import api from './components/api';
 
 function App() {
@@ -179,6 +180,7 @@ function App() {
         <Route path="/checklist-form" element={<ChecklistForm />} />
         <Route path="/checklist/update/:checklistId" element={<ChecklistForm />} />
         <Route path="/checklist/edit/:checklistId" element={<ChecklistEditor />} />
+        <Route path="/checklist-view/:checklistId" element={<ChecklistView />} />
         <Route path="/logic-errors" element={<LogicErrorList />} />
         <Route path="/feedback" element={<FeedbackAdmin />} />
         <Route path="/inspirations" element={<InspirationManagement />} />

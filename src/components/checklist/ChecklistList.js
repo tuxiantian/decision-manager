@@ -83,6 +83,9 @@ const ChecklistList = () => {
     navigate(`/checklist/flowchart/${checklistId}`, { state: { isPlatform } });
   };
 
+  const handleViewClick = (checklistId, isPlatform) => {
+    navigate(`/checklist-view/${checklistId}`, { state: { isPlatform } });
+  };
   // 删除 Checklist 的函数
   const handleDeleteChecklist = async (checklistId, isParent) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this checklist?");
@@ -136,6 +139,14 @@ const ChecklistList = () => {
         <div>Version: {checklist.version}</div>
       </div>
       <div className="checklist-actions">
+        <button onClick={() => handleViewClick(checklist.id, false)} className='icon-button'>
+          <div className="icon-tooltip">
+            <svg className="icon" aria-hidden="true">
+              <use xlinkHref="#icon-chakan"></use>
+            </svg>
+            <span className="tooltip-text">查看</span>
+          </div>
+        </button>
         <button onClick={() => handleReviewClick(checklist)} className="icon-button">
           <div className="icon-tooltip">
             <svg className="icon" aria-hidden="true">
@@ -156,14 +167,14 @@ const ChecklistList = () => {
     </li>
   );
 
-    // 渲染平台检查清单项（包含版本树）
+  // 渲染平台检查清单项（包含版本树）
   const renderPlatformChecklistItem = (checklist) => (
     <li key={checklist.id} className="checklist-item">
       <div className="checklist-info">
         <strong>{checklist.name}</strong>
         <div>{checklist.description}</div>
         <div>Version: {checklist.version} | Clone Count: {checklist.clone_count}</div>
-        
+
         {checklist.versions && checklist.versions.length > 0 && (
           <ul className="version-list">
             {checklist.versions.map(version => (
@@ -173,6 +184,14 @@ const ChecklistList = () => {
                   <div>Version: {version.version} | Clone Count: {version.clone_count}</div>
                 </div>
                 <div className="version-actions">
+                  <button onClick={() => handleViewClick(version.id, true)} className='icon-button'>
+                    <div className="icon-tooltip">
+                      <svg className="icon" aria-hidden="true">
+                        <use xlinkHref="#icon-chakan"></use>
+                      </svg>
+                      <span className="tooltip-text">查看</span>
+                    </div>
+                  </button>
                   <button onClick={() => handleDeleteChecklist(version.id, false)} className="icon-button">
                     <div className="icon-tooltip">
                       <svg className="icon" aria-hidden="true">
@@ -198,6 +217,14 @@ const ChecklistList = () => {
             </div>
           </button>
         )}
+        <button onClick={() => handleViewClick(checklist.id, true)} className='icon-button'>
+          <div className="icon-tooltip">
+            <svg className="icon" aria-hidden="true">
+              <use xlinkHref="#icon-chakan"></use>
+            </svg>
+            <span className="tooltip-text">查看</span>
+          </div>
+        </button>
         <button onClick={() => handleEditClick(checklist.id)} className="icon-button">
           <div className="icon-tooltip">
             <svg className="icon" aria-hidden="true">
@@ -244,9 +271,9 @@ const ChecklistList = () => {
         </button>
       </div>
 
-       {/* 清单列表 */}
+      {/* 清单列表 */}
       <ul className="checklist-list">
-        {tab === 'user' 
+        {tab === 'user'
           ? userChecklists.map(renderUserChecklistItem)
           : checklists.map(renderPlatformChecklistItem)}
       </ul>

@@ -20,7 +20,27 @@ const ChecklistEditor = () => {
         flowData: { nodes: [], connections: [] }
     });
     const navigate = useNavigate();
+    // 用于标记是否阻止滚轮事件的标志
+    const [isWheelEnabled, setIsWheelEnabled] = useState(false);
+    // 阻止页面滚动条的默认滚轮行为
+    useEffect(() => {
+        const handleWheel = (e) => {
+            if (isWheelEnabled) {
+                e.preventDefault();
+            }
+        };
 
+        // 监听滚轮事件，使用 { passive: false } 以确保可以调用 preventDefault
+        window.addEventListener('wheel', handleWheel, { passive: false });
+        return () => {
+            window.removeEventListener('wheel', handleWheel);
+        };
+    }, [isWheelEnabled]);
+
+    // 当切换到流程图标签时，允许滚轮事件
+    useEffect(() => {
+        setIsWheelEnabled(activeTab === 'flowchart');
+    }, [activeTab]);
     // 加载清单数据
     useEffect(() => {
         if (checklistId) {

@@ -112,7 +112,7 @@ const ChecklistView = () => {
     return (
         <div>
             <h3>Flowchart:</h3>
-            {flowchartData && (
+            {flowchartData && flowData.nodes?.length > 0 ? (
                 <div ref={flowchartRef}
                     style={{
                         height: '700px',
@@ -132,6 +132,10 @@ const ChecklistView = () => {
 
                 </div>
 
+            ) : (
+                <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
+                    暂无流程图数据
+                </div>
             )}
             <div>
                 <h3 style={{ margin: '20px auto' }}>Checklist Questions:</h3>
